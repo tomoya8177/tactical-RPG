@@ -4,6 +4,24 @@ import { findNextTile } from './findNextTile';
 import { checkIfUnitCanMoveToTile } from './checkIfUnitCanMovetoTile';
 import type { Tile } from '../Tile/Tile';
 import type { direction } from '$lib/types/direction';
+
+export interface step {
+	tileId: number | '';
+	movement: string;
+	startPosition: xyz | null;
+	endPosition: xyz | null;
+	startYRotation: number | null;
+	endYRotation: number | null;
+}
+
+export interface path {
+	steps: Array<step>;
+	tileId: number | '';
+	position: xyz;
+	consumedPoints: number;
+}
+
+
 export class Pathfinder {
 	paths: Array<path>;
 	tiles: Array<Tile>;

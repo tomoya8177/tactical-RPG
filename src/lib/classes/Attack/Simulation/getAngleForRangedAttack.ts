@@ -1,9 +1,11 @@
+import { systemConfig } from '$lib/systemConfig';
+
 export const getAngleForRangedAttack = (
 	x: number,
 	y: number,
 	v0: number
 ): [number, number] | string => {
-	const g = 9.8;
+	const g = systemConfig.gravity;
 	let v02 = Math.pow(v0, 2);
 	let expr = Math.pow(v02, 2) - g * (g * Math.pow(x, 2) + 2 * y * v02);
 	if (expr < 0) {

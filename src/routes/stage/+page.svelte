@@ -1,8 +1,4 @@
 <script lang="ts">
-	import ActionMenu from '../../Organisms/ActionMenu.svelte';
-
-	import ActorData from '../../Organisms/ActorData.svelte';
-	import ChooseWeaponMenu from '../../Organisms/ChooseWeaponMenu.svelte';
 	import Tile from '../../AframeEntityComponents/Molecules/Tile.svelte';
 
 	import 'aframe';
@@ -17,8 +13,11 @@
 	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { CAMERA } from '$lib/classes/Camera/Camera';
-	import AttackSimulation from '../../Organisms/AttackSimulation.svelte';
 	import { TURN } from '$lib/classes/Turn/Turn';
+	import ActionMenu from '$lib/conponents/Organisms/ActionMenu.svelte';
+	import ActorData from '$lib/conponents/Organisms/ActorData.svelte';
+	import ChooseWeaponMenu from '$lib/conponents/Organisms/ChooseWeaponMenu.svelte';
+	import AttackSimulation from '$lib/conponents/Organisms/AttackSimulation.svelte';
 	let cameraDistance: number = 5;
 
 	let initialTile = STAGE.findTiles()[0];
@@ -37,8 +36,9 @@
 			CAMERA.init();
 			for (let i = 0; i < 8; i++) {
 				let actor: Actor = new Actor();
+				console.log({ actor });
 				let initialTile = STAGE.findTiles()[0];
-				let unit = new Unit(i, 'actor', actor, initialTile.position);
+				let unit = new Unit(i, 'actor', actor, initialTile);
 				units.add([unit]);
 			}
 			console.log({ e });

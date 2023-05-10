@@ -15,7 +15,7 @@ export class Actor {
 	}>;
 	constructor(data: Actor | null = null) {
 		if (!data) {
-			data = autoActor;
+			data = autoActor();
 		}
 		this.name = data.name;
 		this.ST = data.ST;
