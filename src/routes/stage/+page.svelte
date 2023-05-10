@@ -21,13 +21,7 @@
 	let cameraDistance: number = 5;
 
 	let initialTile = STAGE.findTiles()[0];
-	console.log({ initialTile });
 
-	setTimeout(() => {
-		STAGE.setCamera();
-		TURN.start();
-		//		STAGE.startWaitTurn();
-	}, 500);
 	onMount(() => {
 		if (!document) return;
 		const scene = document.querySelector('a-scene');
@@ -41,7 +35,7 @@
 				let unit = new Unit(i, 'actor', actor, initialTile);
 				units.add([unit]);
 			}
-			console.log({ e });
+			TURN.start();
 		});
 	});
 </script>

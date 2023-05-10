@@ -35,6 +35,7 @@ export class Simulation {
 		this.curves.forEach((curve) => {
 			curve.parentNode?.removeChild(curve);
 		});
+		this.curves = [];
 	};
 	simulate = async (): Promise<simulationResult> => {
 		return new Promise(async (resolve) => {
@@ -115,12 +116,14 @@ export class Simulation {
 					});
 				});
 				if (result[0].intercepted && result[1].intercepted) {
-					curve1.parentNode?.removeChild(curve1);
+					curve2.setAttribute('visible', 'true');
 					resolve(result[1]);
 				} else if (result[0].intercepted) {
+					curve2.setAttribute('visible', 'true');
 					curve1.parentNode?.removeChild(curve1);
 					resolve(result[1]);
 				} else {
+					curve1.setAttribute('visible', 'true');
 					curve2.parentNode?.removeChild(curve2);
 					resolve(result[0]);
 				}
@@ -128,7 +131,9 @@ export class Simulation {
 		});
 	};
 	drawCurveForRangedAttack = (distance: number, angle: number): Entity => {
-		const curve = document.createElement('a-entity') as Entity;
+		const curve = createAframeEntity('a-entity', {
+			visible: 'false'
+		});
 
 		const speedX = (this.weapon.range * Math.cos(angle)) / ticksPerSecond;
 		let speedY = (this.weapon.range * Math.sin(angle)) / ticksPerSecond;

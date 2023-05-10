@@ -76,7 +76,6 @@ class Attack {
 				if (!this.attacker || !this.foe || !this.attackerTile || !this.weapon) return;
 				this.simulation = new Simulation(this.attacker, this.foe, this.weapon);
 				uiController.hide('actorData');
-				console.log(this);
 				const simulationResult = this.simulation.simulate();
 				uiController.show('attackSimulation');
 

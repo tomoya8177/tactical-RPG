@@ -20,7 +20,6 @@ export const uiController = {
 	show: (title: string) => {
 		uiControllerStore.update((dump) => {
 			title = title as keyof uiControllerType;
-			console.log(title);
 			dump[title as keyof uiControllerType] = true;
 			return dump;
 		});

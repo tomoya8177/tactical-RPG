@@ -14,18 +14,13 @@ class Stage {
 	isTest: boolean;
 	tiles: Array<Tile>;
 	unitOnFocus: Unit | null;
-	camera: Entity | null;
 	paths: Array<any>;
 	constructor(stageId = null) {
 		this.id = stageId;
 		this.isTest = stageId == null ? true : false;
 		this.tiles = stageId == null ? testStage(20, 10) : [];
 		this.unitOnFocus = null;
-		this.camera = null;
 		this.paths = [];
-	}
-	setCamera(): void {
-		this.camera = document.getElementById('rig') as Entity;
 	}
 
 	clearTileHighlights(): void {
