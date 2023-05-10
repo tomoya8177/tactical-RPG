@@ -11,12 +11,14 @@ import { showDecimal } from '$lib/Maths/showDecimal';
 import { createAframeEntity } from '$lib/createAframeEntity';
 import { lifeBar, updateLifeBar } from './lifeBar';
 import { triangles } from './triangles';
+import type { Tile } from '../Tile/Tile';
 export type unitState = 'idle' | 'target' | 'focused' | 'directing';
 export class Unit {
 	id: number;
 	state: unitState;
 	type: 'actor' | null;
 	actor: Actor | null;
+	tile: Tile | null;
 	position: xyz;
 	direction: direction;
 	currentWaitTurn: number;
@@ -29,12 +31,13 @@ export class Unit {
 		grey: Entity | null;
 	};
 	el: Entity;
-	constructor(id: number, type: 'actor' | null = null, actor: Actor | null = null, position: xyz) {
+	constructor(id: number, type: 'actor' | null = null, actor: Actor | null = null, tile: Tile) {
 		this.id = id;
 		this.state = 'idle';
 		this.type = type == null ? 'actor' : type;
 		this.actor = type == null ? null : actor;
-		this.position = position;
+		this.tile = tile;
+		this.position = tile.position;
 		this.direction = type == null ? 'S' : 'S';
 		this.currentWaitTurn = this.waitTurn;
 		this.taskPoint = systemConfig.defaultTaskPoint;

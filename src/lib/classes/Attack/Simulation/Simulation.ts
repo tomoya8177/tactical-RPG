@@ -9,8 +9,12 @@ import { systemConfig } from '$lib/systemConfig';
 import { appendRangeCurveToScene } from './appendRangeCurveToScene';
 
 type rangeSimulationResult = {
-	curve: Entity;
+	curve: Entity | null;
 	intercepted: boolean;
+	outOfRange: boolean;
+};
+type simulationResult = {
+	result: string;
 };
 export class Simulation {
 	attacker: Unit;
@@ -32,18 +36,22 @@ export class Simulation {
 			curve.parentNode?.removeChild(curve);
 		});
 	};
-	simulate = async (): simulationResult => {
-		if (this.weapon.rangeType == 'ranged') {
-			const rangeSimulationResult = await this.simulateRangeAttack();
+	simulate = async (): Promise<simulationResult> => {
+		return new Promise(async (resolve) => {
+			if (this.weapon.rangeType == 'ranged') {
+				const rangeSimulationResult = await this.simulateRangeAttack();
 
-			const angle = (Math.PI / 180) * 45;
-			if (rangeSimulationResult.intercepted) {
-				return {
-					result: 'intercepted'
-				};
+				if (rangeSimulationResult.intercepted) {
+					resolve({
+						result: 'intercepted'
+					});
+				}
+				console.log({ rangeSimulationResult });
 			}
-			console.log({ rangeSimulationResult });
-		}
+			resolve({
+				result: 'success'
+			});
+		});
 	};
 	simulateRangeAttack = (): Promise<rangeSimulationResult> => {
 		const attackerVector = new Vector3(this.attacker.position.x, 0, this.attacker.position.z);
@@ -51,7 +59,12 @@ export class Simulation {
 		const distance = attackerVector.distanceTo(foeVector);
 		const yDiff = this.foe.position.y - this.attacker.position.y;
 		const result = getAngleForRangedAttack(distance, yDiff, this.weapon.range);
-		if (typeof result == 'string') return;
+		if (typeof result == 'string')
+			return Promise.resolve({
+				curve: null,
+				intercepted: true,
+				outOfRange: true
+			});
 		const [angle1, angle2] =
 			result[0] > result[1] ? [result[1], result[0]] : [result[0], result[1]];
 		const grounds = Array.from(document.querySelectorAll('.ground')) as Array<Entity>;
@@ -97,7 +110,8 @@ export class Simulation {
 					}
 					result.push({
 						curve: curve,
-						intercepted
+						intercepted,
+						outOfRange: false
 					});
 				});
 				if (result[0].intercepted && result[1].intercepted) {

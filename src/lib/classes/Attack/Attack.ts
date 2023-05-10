@@ -1,6 +1,5 @@
 import type { Unit } from '../Unit/Unit';
 import type { Equipment } from '../Equipment/Equipment';
-import type { attackResult } from '$lib/types/attackResult';
 import { uiController } from '$lib/stores/uiControllerStore';
 import { findTargetTiles } from './findTargetTiles';
 import { findUnitOnTile } from './findUnitOnTile';
@@ -11,6 +10,12 @@ import { units } from '$lib/stores/unitStore';
 import type { Tile } from '../Tile/Tile';
 import { Simulation } from './Simulation/Simulation';
 export const ticksPerSecond = 60;
+
+export interface attackResult {
+	result: string;
+	foeIsDead: boolean;
+	damage: number;
+}
 
 type state =
 	| 'idle'
@@ -23,7 +28,6 @@ type state =
 class Attack {
 	state: state = 'idle';
 	attacker: Unit | null = null;
-	attackerTile: Tile | null;
 	weapon: Equipment | null = null;
 	foe: Unit | null = null;
 	simulation: Simulation | null = null;
@@ -32,17 +36,17 @@ class Attack {
 	constructor() {
 		this.state = 'idle';
 		this.attacker = null;
-		this.attackerTile = null;
 		this.weapon = null;
 		this.foe = null;
 		this.simulationResult = null;
 		this.result = null;
 	}
 	init(attacker: Unit | null = null, tile: Tile | null = null): void {
+		if(!TURN.unit) return
 		if (!attacker) attacker = TURN.unit;
 		if (!tile) tile = STAGE.findTiles(attacker?.position.x, attacker?.position.z)[0];
 		this.attacker = attacker;
-		this.attackerTile = tile;
+		this.attacker.tile = tile;
 		this.changeState('selectingWeapon');
 	}
 
