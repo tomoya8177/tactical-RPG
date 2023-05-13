@@ -1,27 +1,25 @@
 import { radians2degrees } from '$lib/Maths/radian2degrees';
+import type { Unit } from '$lib/classes/Unit/Unit';
+import { createAframeEntity } from '$lib/createAframeEntity';
 import type { xyz } from '$lib/types/xyz';
 import type { Entity } from 'aframe';
 import { Vector3 } from 'three';
 const southVector = new Vector3(0, 0, 1);
-export const appendRangeCurveToScene = (
-	curve: Entity,
-	tilePosition: xyz,
-	attackOrigin: Vector3,
-	unitY: number
-) => {
+export const appendRangeCurveToScene = (curve: Entity, attacker: Unit, foe: Unit): Entity => {
 	const scene = document.querySelector('a-scene');
-	const entity = document.createElement('a-entity');
-	const targetVector = new Vector3(tilePosition.x, 0, tilePosition.z).sub(attackOrigin);
+	const targetVector = new Vector3(foe.x, 0, foe.z).sub(attacker.vector3);
 	const angle = radians2degrees(southVector.angleTo(targetVector));
 	let rotation;
 	if (targetVector.x < 0) {
-		rotation = -angle;
+		rotation = -angle - 90;
 	} else {
-		rotation = angle;
+		rotation = angle - 90;
 	}
+	curve.setAttribute('rotation', `0 ${rotation} 0`);
 
-	entity.setAttribute('position', { x: attackOrigin.x, y: unitY, z: attackOrigin.z });
-	curve.setAttribute('rotation', `0 ${rotation - 90} 0`);
-	entity.appendChild(curve);
-	scene.appendChild(entity);
+	curve.setAttribute('position', `${attacker.x} ${attacker.y + 1.5} ${attacker.z}`);
+	curve.classList.add('simulation-curve');
+
+	scene.appendChild(curve);
+	return curve;
 };

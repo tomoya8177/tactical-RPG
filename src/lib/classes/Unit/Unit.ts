@@ -1,6 +1,4 @@
 import { systemConfig } from '$lib/systemConfig';
-import type { actor } from '$lib/types/actor';
-import type { path } from '$lib/types/path';
 import type { xyz } from '$lib/types/xyz';
 import type { Entity } from 'aframe';
 import type { Actor } from '../Actor/Actor';
@@ -12,6 +10,11 @@ import { createAframeEntity } from '$lib/createAframeEntity';
 import { lifeBar, updateLifeBar } from './lifeBar';
 import { triangles } from './triangles';
 import type { Tile } from '../Tile/Tile';
+import type { path } from '../Pathfinder/Pathfinder';
+import { STAGE } from '../Stage/Stage';
+import { Vector3 } from 'three';
+import type { Equipment } from '../Equipment/Equipment';
+import { buildEntity } from './buildEntity';
 export type unitState = 'idle' | 'target' | 'focused' | 'directing';
 export class Unit {
 	id: number;
@@ -43,26 +46,8 @@ export class Unit {
 		this.taskPoint = systemConfig.defaultTaskPoint;
 		this.currentTaskPoint = systemConfig.defaultTaskPoint;
 		this.consumedMovementPoint = 0;
-		this.el = createAframeEntity('a-entity', {
-			'unit-component': '',
-			position: this.position
-		});
-		this.el.id = this.id.toString();
-		const model = createAframeEntity('a-gltf-model', {
-			src: 'assets/medieval_soldier.glb',
-			scale: '0.5 0.5 0.5',
-			color: '#ff0000',
-			material: `color:#ff0000;
-			shader:flat;`
-		});
-		this.el.appendChild(model);
-		this.lifeBars = {
-			main: null,
-			life: null,
-			grey: null
-		};
-		[this.lifeBars.main, this.lifeBars.life, this.lifeBars.grey] = lifeBar();
-		this.el.appendChild(this.lifeBars.main);
+		this.el = buildEntity(this);
+
 		const scene = document.querySelector('a-scene');
 		scene?.appendChild(this.el);
 	}
@@ -87,20 +72,37 @@ export class Unit {
 		return this.speed - this.consumedMovementPoint;
 	}
 	get dodge(): number {
+		if (this.currentTaskPoint < systemConfig.taskPointDodge) return 0;
 		if (!this.actor) return 0;
 
 		return Math.max((this.actor?.DX + this.actor?.HT) / 4, this.actor?.DX / 2);
 	}
-	parry(): number {
-		if (!this.actor) return 0;
+	get x(): number {
+		return this.position.x;
+	}
+	get y(): number {
+		return this.position.y;
+	}
+	get z(): number {
+		return this.position.z;
+	}
+	get vector3(): Vector3 {
+		return new Vector3(this.x, 0, this.z);
+	}
+	get parry(): [Equipment | null, number] {
+		if (this.currentTaskPoint < systemConfig.taskPointParry) return [null, 0];
+		if (!this.actor) return [null, 0];
 
 		const equipment = this.actor.equipments[0];
-		return Math.max(
-			this.getLv(equipment.skillToUse) / 2,
-			this.getLv(equipment.skillToUse) / 2,
-			(this.getLv('Fencing') * 2) / 3,
-			(this.getLv('Quarterstaff') * 2) / 3
-		);
+		return [
+			equipment,
+			Math.max(
+				this.getLv(equipment.skillToUse) / 2,
+				this.getLv(equipment.skillToUse) / 2,
+				(this.getLv('Fencing') * 2) / 3,
+				(this.getLv('Quarterstaff') * 2) / 3
+			)
+		];
 	}
 	giveDamage(damage: number): void {
 		if (!this.actor) return;
@@ -165,7 +167,7 @@ export class Unit {
 
 		await moveToTile(path, this.el);
 		this.changeState('directing');
-
+		this.tile = STAGE.tiles.find((tile) => tile.id == path.tileId) || null;
 		const consumingTaskPoint = path.consumedPoints / this.speed;
 		this.consumeTaskPoint(consumingTaskPoint);
 		this.consumedMovementPoint += path.consumedPoints;

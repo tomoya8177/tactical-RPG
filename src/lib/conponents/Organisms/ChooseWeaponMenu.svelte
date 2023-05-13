@@ -24,6 +24,7 @@
 			disabled={unit?.currentTaskPoint - 0.7 < weapon.attackCost}
 		>
 			{weapon.name}
+			(SkillLv:{unit?.getLv(weapon.skillToUse)})
 		</button>
 	{/each}
 </div>

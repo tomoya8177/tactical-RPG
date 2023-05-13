@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '$lib/aframeComponents';
-	import type { Tile } from '$lib/classes/Stage/Tile/Tile';
+	import type { Tile } from '$lib/classes/Tile/Tile';
 
 	export let tile: Tile;
 </script>
 
 <a-entity stage-tile-component id={tile.id} position={tile.position}>
-	{#if tile.isGround}
+	{#if tile.isGround && tile.position.y > 0}
 		<a-box
+			visible="false"
 			class="ground"
 			width="1"
 			height={tile.position.y}

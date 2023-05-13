@@ -27,6 +27,7 @@
 		const scene = document.querySelector('a-scene');
 		if (!scene) return;
 		scene.addEventListener('loaded', (e) => {
+			STAGE.init();
 			CAMERA.init();
 			for (let i = 0; i < 8; i++) {
 				let actor: Actor = new Actor();
@@ -64,15 +65,25 @@
 				maxCanvasWidth: 1920;
 				maxCanvasHeight: 1920;"
 >
-	<a-assets />
+	<a-assets>
+		<img src="assets/water.jpg" id="water" />
+	</a-assets>
 	<a-entity
 		environment="
 		preset: contact;
 	skyType: gradient;
 	skyColor: skyblue;
-	ground:flat;
+	ground:none;
 	grid:1x1
   "
+	/>
+	<a-plane
+		width="20"
+		height="20"
+		rotation="-90 0 0"
+		position="9.5 0 9,5"
+		opacity="0.7"
+		material="shader: flat; src: #water;repeat:10 10;"
 	/>
 	<a-entity tactics-navigation id="rig" position="0 0 0">
 		<a-entity class="offsetter" rotation="0 -45 0">
@@ -86,9 +97,5 @@
 			/>
 		</a-entity>
 	</a-entity>
-	<a-entity>
-		{#each STAGE.tiles as tile}
-			<Tile {tile} />
-		{/each}
-	</a-entity>
+	<a-entity id="tiles" />
 </a-scene>

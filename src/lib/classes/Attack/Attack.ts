@@ -42,15 +42,15 @@ class Attack {
 		this.result = null;
 	}
 	init(attacker: Unit | null = null, tile: Tile | null = null): void {
-		if(!TURN.unit) return
+		if (!TURN.unit) return;
 		if (!attacker) attacker = TURN.unit;
-		if (!tile) tile = STAGE.findTiles(attacker?.position.x, attacker?.position.z)[0];
+		if (!tile) tile = STAGE.findTiles(attacker?.x, attacker?.z)[0];
 		this.attacker = attacker;
 		this.attacker.tile = tile;
 		this.changeState('selectingWeapon');
 	}
 
-	changeState(state: state): void {
+	async changeState(state: state): void {
 		switch (state) {
 			case 'idle':
 				break;
@@ -69,14 +69,14 @@ class Attack {
 					if (targetUnit && targetUnit.id != TURN.unit.id) {
 						targetUnit.highlightAttackTarget();
 					}
-					tile.highlightAttackTarget();
+					tile.changeState('target');
 				});
 				break;
 			case 'simulating':
-				if (!this.attacker || !this.foe || !this.attackerTile || !this.weapon) return;
+				if (!this.attacker || !this.foe || !this.attacker.tile || !this.weapon) return;
 				this.simulation = new Simulation(this.attacker, this.foe, this.weapon);
 				uiController.hide('actorData');
-				const simulationResult = this.simulation.simulate();
+				const simulationResult = await this.simulation.simulate();
 				uiController.show('attackSimulation');
 
 				break;

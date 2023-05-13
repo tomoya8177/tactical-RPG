@@ -9,10 +9,10 @@ export const findTargetTiles = (unit: Unit, weapon: Equipment, tiles: Tile[]): A
 	const attackOrigin = new Vector3(unit.position.x, 0, unit.position.z);
 	switch (weapon.rangeType) {
 		case 'direct':
-			return tiles.filter((tile) => tile.ifTileInDirectRange(attackOrigin, weapon.length));
+			return tiles.filter((tile) => tile.ifInDirectRange(attackOrigin, weapon.length));
 		case 'ranged': {
 			return tiles.filter((tile) =>
-				tile.ifTileInRange(attackOrigin, tile, weapon, tile.position.y - unit.position.y)
+				tile.ifInRange(attackOrigin, weapon, tile.position.y - unit.position.y)
 			);
 		}
 	}

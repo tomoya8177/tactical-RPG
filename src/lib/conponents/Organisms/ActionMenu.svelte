@@ -20,7 +20,7 @@
 		//hide highlighted tiles
 		if (!TURN.unit) return;
 		ATTACK.init(TURN.unit);
-		STAGE.hideHighlightedTiles();
+		STAGE.resetAllTiles();
 		console.log('onAttackClicked');
 
 		//unit.startAttack();

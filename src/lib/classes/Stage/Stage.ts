@@ -1,26 +1,42 @@
 import { testStage } from '$lib/classes/Stage/testStage';
 import { uiController } from '$lib/stores/uiControllerStore';
 import { units } from '$lib/stores/unitStore';
-import { Pathfinder } from '../Pathfinder/Pathfinder';
+import { Pathfinder, type path } from '../Pathfinder/Pathfinder';
 import type { Unit } from '../Unit/Unit';
-import type { Tile } from '../Tile/Tile';
+import { Tile } from '../Tile/Tile';
 import { CAMERA } from '../Camera/Camera';
-import type { path } from '$lib/types/path';
 import type { Entity } from 'aframe';
 import { TURN } from '../Turn/Turn';
+import { Box3 } from 'three';
 const PATHFINDER = new Pathfinder();
 class Stage {
 	id: string | null;
 	isTest: boolean;
-	tiles: Array<Tile>;
+	tiles: Array<Tile> = [];
 	unitOnFocus: Unit | null;
-	paths: Array<any>;
+	paths: Array<any> = [];
+	structures: Array<Box3> = [];
 	constructor(stageId = null) {
 		this.id = stageId;
 		this.isTest = stageId == null ? true : false;
-		this.tiles = stageId == null ? testStage(20, 10) : [];
 		this.unitOnFocus = null;
-		this.paths = [];
+	}
+	init(): void {
+		const tiles = document.getElementById('tiles');
+		if (this.isTest) {
+			this.tiles = testStage(20, 20);
+			this.tiles.forEach((tile) => {
+				tiles?.appendChild(tile.el);
+				//tile.el.setAttribute('position', tile.position);
+			});
+		}
+		const grounds = Array.from(document.querySelectorAll('.ground')) as Array<Entity>;
+		this.structures = [];
+		grounds.forEach((ground) => {
+			const box = new Box3().setFromObject(ground.object3D);
+			this.structures.push(box);
+		});
+		console.log({ structures: this.structures });
 	}
 
 	clearTileHighlights(): void {
@@ -29,17 +45,17 @@ class Stage {
 				unit.unhighlightAttackTarget();
 			}
 		});
-		this.hideHighlightedTiles();
-		this.hideAttackableTiles();
+		this.resetAllTiles();
+		//this.hideAttackableTiles();
 	}
 	hideAttackableTiles(): void {
 		this.tiles.forEach((tile) => {
-			tile.hideAttackTarget();
+			tile.changeState('idle');
 		});
 	}
-	hideHighlightedTiles(): void {
+	resetAllTiles(): void {
 		this.tiles.forEach((tile) => {
-			tile.hideHighlighted();
+			tile.changeState('idle');
 		});
 	}
 	async highlightUnit(): Promise<boolean> {
@@ -60,18 +76,15 @@ class Stage {
 
 	findTiles(x: number | null = null, z: number | null = null): Array<Tile> {
 		if (x == null && z == null) {
-			const tile = this.tiles[Math.round(Math.random() * this.tiles.length - 1)];
+			const grounds = this.tiles.filter((tile) => tile.type == 'walkable');
+			const tile = grounds[Math.round(Math.random() * grounds.length - 1)];
 			return [tile];
 		}
-		return this.tiles.filter((tile) => tile.position.x == x && tile.position.z == z);
+		return this.tiles.filter((tile) => tile.x == x && tile.z == z);
 	}
 	findPath(unit: Unit): Array<path> {
 		PATHFINDER.init(
 			this.tiles.map((tile) => {
-				tile.occupiedBy = null;
-				if (units.getAll().find((unit) => unit.position == tile.position)) {
-					tile.occupiedBy = unit;
-				}
 				return tile;
 			})
 		);
@@ -79,13 +92,13 @@ class Stage {
 		this.paths = PATHFINDER.findPath(unit.position, unit.direction, unit.movement, 0, []);
 		this.paths.forEach((path) => {
 			const tile = this.tiles.find((tile) => tile.id == path.tileId);
-			tile?.highlight();
+			tile?.changeState('destination');
 		});
 		return this.paths;
 	}
 
 	async moveUnit(tileId: number): Promise<void> {
-		this.hideHighlightedTiles();
+		this.resetAllTiles();
 		const path = this.paths.find((path) => path.tileId == tileId);
 		const UNIT = units.getAll().find((unit) => unit.id == TURN.unit?.id);
 		if (!UNIT) return;

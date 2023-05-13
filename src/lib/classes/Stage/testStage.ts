@@ -1,5 +1,5 @@
 import { Tile } from '../Tile/Tile';
-export const testStage = (x: number, z: number, y: number | null = null) => {
+export const testStage = (x: number, z: number, y: number | null = null): Tile[] => {
 	const checkYIsTooDifferent = (y) => {
 		const prevTile = stageTiles.find((tile) => tile.id == count - 1);
 		const prevRowTile = stageTiles.find((tile) => tile.id == count - x - 1);
@@ -19,7 +19,7 @@ export const testStage = (x: number, z: number, y: number | null = null) => {
 			const position = {
 				x: i,
 				z: j,
-				y: Math.round(Math.random() * 25) * 0.25
+				y: Math.round(Math.random() * 15) * 0.25 - 1.4
 			};
 			if (i > 0 && j > 0) {
 				position.y = checkYIsTooDifferent(position.y);
@@ -28,7 +28,7 @@ export const testStage = (x: number, z: number, y: number | null = null) => {
 				id: count,
 				position,
 				isGround: true,
-				type: Math.random() > 0.2 ? 'walkable' : 'unwalkable',
+				type: position.y > 0 ? 'walkable' : 'unwalkable',
 				material: 'dirt'
 			});
 			stageTiles.push(tile);

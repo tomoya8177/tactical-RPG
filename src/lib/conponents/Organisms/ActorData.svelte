@@ -50,9 +50,9 @@
 				{#if unit.id == TURN.unit?.id}
 					0
 				{:else}
-					{showDecimal(unit.currentWaitTurn, 2) * 100}
+					{Math.round(showDecimal(unit.currentWaitTurn, 2) * 100)}
 				{/if}
-				/ {showDecimal(unit.waitTurn, 2) * 100}
+				/ {Math.round(showDecimal(unit.waitTurn, 2) * 100)}
 			</div>
 		</div>
 		<div style="display:flex;gap:1rem">
