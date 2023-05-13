@@ -3,6 +3,7 @@
 	import { ATTACK } from '$lib/classes/Attack/Attack';
 	import { uiController } from '$lib/stores/uiControllerStore';
 	import { FogExp2 } from 'three';
+	import WeaponTag from '../Atoms/WeaponTag.svelte';
 
 	const onOKClicked = () => {
 		ATTACK.execute();
@@ -16,20 +17,13 @@
 	attackSimulation
 	<button on:click={() => onOKClicked()}>OK</button>
 	<button on:click={() => onCancelClicked()}>Cancel</button>
-	{#if ATTACK.simulation && ATTACK.simulation.result && ATTACK.weapon && ATTACK.foe}
+	{#if ATTACK.simulation && ATTACK.simulation.result && ATTACK.weapon && ATTACK.foe && ATTACK.attacker}
 		{@const result = ATTACK.simulation.result}
 		<div class="results">
 			<div>
 				attacker:{ATTACK.attacker?.actor?.name}
 			</div>
-			<div>
-				Weapon:{ATTACK.weapon?.name}
-			</div>
-			<div>
-				Skill:{ATTACK.weapon?.skillToUse} (Lv:
-				{ATTACK.attacker?.getLv(ATTACK.weapon?.skillToUse)}
-				)
-			</div>
+			<WeaponTag weapon={ATTACK.weapon} level={ATTACK.attacker.getLv(ATTACK.weapon.skillToUse)} />
 			<div>
 				hit:{Math.round(result.hit * 100)}%
 			</div>

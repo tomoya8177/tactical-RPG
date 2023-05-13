@@ -21,8 +21,17 @@
 		if (!TURN.unit) return;
 		ATTACK.init(TURN.unit);
 		STAGE.resetAllTiles();
-		console.log('onAttackClicked');
+		STAGE.state = 'selectingWeapon';
 
+		//unit.startAttack();
+	};
+	const onEquipmentClicked = () => {
+		//hide highlighted tiles
+		if (!TURN.unit) return;
+		STAGE.changeState('equipment');
+		uiController.show('equipmentMenu');
+		uiController.hide('actionMenu');
+		uiController.hide('actorData');
 		//unit.startAttack();
 	};
 </script>
@@ -32,6 +41,7 @@
 		<button on:click={onMoveClicked} disabled={STAGE.findPath(unit).length == 0}>Move</button>
 
 		<button on:click={onAttackClicked} disabled={unit.currentTaskPoint < 2}>Attack</button>
+		<button on:click={onEquipmentClicked} disabled={unit.currentTaskPoint < 2}>Equipment</button>
 		<button on:click={onEndTurnClicked}>End Turn</button>
 	</div>
 {/if}

@@ -28,7 +28,7 @@ AFRAME.registerComponent('unit-component', {
 			console.log('clicked', this.unit, event.target, this.data.state);
 			switch (this.unit.state) {
 				case 'idle':
-					STAGE.clearTileHighlights();
+					STAGE.resetAllTiles();
 					if (this.unit.id != TURN.unit?.id) {
 						uiController.hide('actionMenu');
 					}
@@ -40,7 +40,7 @@ AFRAME.registerComponent('unit-component', {
 					uiController.show('actorData');
 					break;
 				case 'target': {
-					STAGE.clearTileHighlights();
+					STAGE.resetAllTiles();
 					ATTACK.setFoe(this.unit);
 
 					break;

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import Tile from '../../AframeEntityComponents/Molecules/Tile.svelte';
-
 	import 'aframe';
 	import 'aframe-environment-component';
 	import 'aframe-extras';
@@ -10,7 +8,6 @@
 	import { units } from '$lib/stores/unitStore';
 	import { Actor } from '$lib/classes/Actor/Actor';
 	import { uiController } from '$lib/stores/uiControllerStore';
-	import { fade } from 'svelte/transition';
 	import { onMount } from 'svelte';
 	import { CAMERA } from '$lib/classes/Camera/Camera';
 	import { TURN } from '$lib/classes/Turn/Turn';
@@ -18,6 +15,7 @@
 	import ActorData from '$lib/conponents/Organisms/ActorData.svelte';
 	import ChooseWeaponMenu from '$lib/conponents/Organisms/ChooseWeaponMenu.svelte';
 	import AttackSimulation from '$lib/conponents/Organisms/AttackSimulation.svelte';
+	import EquipmentMenu from '$lib/conponents/Organisms/EquipmentMenu.svelte';
 	let cameraDistance: number = 5;
 
 	let initialTile = STAGE.findTiles()[0];
@@ -50,6 +48,9 @@
 {#if $uiController.chooseWeaponMenu && TURN.unit}
 	<ChooseWeaponMenu unit={TURN.unit} />
 {/if}
+{#if $uiController.equipmentMenu && TURN.unit}
+	<EquipmentMenu unit={TURN.unit} />
+{/if}
 {#if $uiController.attackSimulation}
 	<AttackSimulation />
 {/if}
@@ -70,14 +71,12 @@
 	</a-assets>
 	<a-entity
 		environment="
-		preset: contact;
-	skyType: gradient;
-	skyColor: skyblue;
+	
 	ground:none;
-	grid:1x1
   "
 	/>
 	<a-plane
+		shadow="true"
 		width="20"
 		height="20"
 		rotation="-90 0 0"

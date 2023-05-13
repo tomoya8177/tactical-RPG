@@ -9,13 +9,17 @@ export const buildEntity = (tile: Tile): Entity => {
 	});
 	entity.id = tile.id.toString();
 	const plane = createAframeEntity('a-plane', {
+		shadow: 'true',
 		width: 1,
 		height: 1,
-		rotation: '-90 0 0'
+		rotation: '-90 0 0',
+		color: 'grey'
 	});
 	entity.appendChild(plane);
 	const box = createAframeEntity('a-box', {
-		material: 'wireframe:true',
+		wireframe: 'true',
+		'segments-height': tile.y + 5,
+		'wireframe-linewidth': 4,
 		width: 1,
 		height: tile.y + 5,
 		depth: 1,

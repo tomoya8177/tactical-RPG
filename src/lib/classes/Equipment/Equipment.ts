@@ -1,3 +1,32 @@
+export const bodyParts = {
+	head: {
+		title: 'Head'
+	},
+	torso: {
+		title: 'Torso'
+	},
+	leftArm: {
+		title: 'Left Arm'
+	},
+	rightArm: {
+		title: 'Right Arm'
+	},
+	leftLeg: {
+		title: 'Left Leg'
+	},
+	rightLeg: {
+		title: 'Right Leg'
+	},
+	waist: {
+		title: 'Waist'
+	},
+
+	back: {
+		title: 'Back'
+	}
+};
+
+type bodyParts = keyof typeof bodyParts;
 export class Equipment {
 	name: string;
 	weight: number;
@@ -13,6 +42,7 @@ export class Equipment {
 	maxLife: number;
 	range: number;
 	rangeType: rangeType;
+	equippedOn: bodyParts | null = null;
 	constructor(data: Equipment) {
 		this.name = data.name;
 		this.weight = data.weight;
@@ -28,6 +58,7 @@ export class Equipment {
 		this.attackCost = data.attackCost || 1;
 		this.range = data.range || 30;
 		this.rangeType = data.rangeType || 'direct';
+		this.equippedOn = data.equippedOn || null;
 	}
 }
 export type rangeType = 'direct' | 'ranged';

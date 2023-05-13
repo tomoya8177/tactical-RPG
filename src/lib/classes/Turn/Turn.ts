@@ -14,6 +14,8 @@ class Turn {
 		this.unit = unit;
 		this.unit.resetTaskPoint();
 		await STAGE.focusOnUnit(this.unit);
+		STAGE.changeState('idle');
+		this.unit.changeState('inTurn');
 		uiController.show('actionMenu');
 	}
 	end() {
@@ -29,7 +31,8 @@ class Turn {
 		uiController.hide('actorData');
 		uiController.hide('actionMenu');
 
-		STAGE.clearTileHighlights();
+		STAGE.resetAllTiles();
+		this.unit.resetState();
 		this.unit = null;
 		this.start();
 	}

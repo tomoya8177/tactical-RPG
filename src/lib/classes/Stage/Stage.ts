@@ -9,12 +9,25 @@ import type { Entity } from 'aframe';
 import { TURN } from '../Turn/Turn';
 import { Box3 } from 'three';
 const PATHFINDER = new Pathfinder();
+type state =
+	| 'idle'
+	| 'selectingWeapon'
+	| 'attack'
+	| 'selectingDestination'
+	| 'moving'
+	| 'selectingDirection'
+	| 'defencing'
+	| 'equipment'
+	| 'exchangingEquipment'
+	| 'pickpocketing'
+	| 'firstAid';
 class Stage {
 	id: string | null;
 	isTest: boolean;
+	state: state | null = null;
 	tiles: Array<Tile> = [];
 	unitOnFocus: Unit | null;
-	paths: Array<any> = [];
+	paths: Array<path> = [];
 	structures: Array<Box3> = [];
 	constructor(stageId = null) {
 		this.id = stageId;
@@ -39,15 +52,6 @@ class Stage {
 		console.log({ structures: this.structures });
 	}
 
-	clearTileHighlights(): void {
-		units.getAll().forEach((unit) => {
-			if (unit.state != 'directing') {
-				unit.unhighlightAttackTarget();
-			}
-		});
-		this.resetAllTiles();
-		//this.hideAttackableTiles();
-	}
 	hideAttackableTiles(): void {
 		this.tiles.forEach((tile) => {
 			tile.changeState('idle');
@@ -57,6 +61,21 @@ class Stage {
 		this.tiles.forEach((tile) => {
 			tile.changeState('idle');
 		});
+	}
+	changeState(state: state) {
+		console.log('changing stage state', { state });
+		switch (state) {
+			case 'idle':
+				uiController.hide('chooseWeaponMenu');
+				uiController.show('actionMenu');
+				break;
+			case 'selectingWeapon':
+				uiController.hide('actionMenu');
+				this.resetAllTiles();
+				uiController.show('chooseWeaponMenu');
+				break;
+		}
+		this.state = state;
 	}
 	async highlightUnit(): Promise<boolean> {
 		const unit = this.unitOnFocus;
@@ -90,6 +109,15 @@ class Stage {
 		);
 		if (!unit.position || !unit.direction || unit.currentTaskPoint < 2) return [];
 		this.paths = PATHFINDER.findPath(unit.position, unit.direction, unit.movement, 0, []);
+		//add a path where you don't make any move
+		if (unit.tile) {
+			this.paths.push({
+				tileId: unit.tile?.id,
+				steps: [],
+				position: unit.position,
+				consumedPoints: 0
+			});
+		}
 		this.paths.forEach((path) => {
 			const tile = this.tiles.find((tile) => tile.id == path.tileId);
 			tile?.changeState('destination');

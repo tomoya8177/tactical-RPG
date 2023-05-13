@@ -91,6 +91,7 @@ class Attack {
 				this.weapon = null;
 				this.foe = null;
 				STAGE.highlightUnit();
+				STAGE.changeState('idle');
 				uiController.show('actionMenu');
 				break;
 		}
@@ -103,6 +104,9 @@ class Attack {
 	setFoe(foe: Unit): void {
 		this.foe = foe;
 		this.changeState('simulating');
+		units.getAll().forEach((unit) => {
+			unit.changeState('idle');
+		});
 	}
 	execute(): void {
 		if (!this.attacker || !this.foe || !this.weapon) return;

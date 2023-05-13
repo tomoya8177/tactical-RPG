@@ -15,7 +15,9 @@ import { STAGE } from '../Stage/Stage';
 import { Vector3 } from 'three';
 import type { Equipment } from '../Equipment/Equipment';
 import { buildEntity } from './buildEntity';
-export type unitState = 'idle' | 'target' | 'focused' | 'directing';
+import { TURN } from '../Turn/Turn';
+import { inTurnIndicator } from './inTurnIndicator';
+export type unitState = 'idle' | 'target' | 'focused' | 'directing' | 'inTurn';
 export class Unit {
 	id: number;
 	state: unitState;
@@ -32,7 +34,12 @@ export class Unit {
 		main: Entity | null;
 		life: Entity | null;
 		grey: Entity | null;
+	} = {
+		main: null,
+		life: null,
+		grey: null
 	};
+
 	el: Entity;
 	constructor(id: number, type: 'actor' | null = null, actor: Actor | null = null, tile: Tile) {
 		this.id = id;
@@ -47,6 +54,13 @@ export class Unit {
 		this.currentTaskPoint = systemConfig.defaultTaskPoint;
 		this.consumedMovementPoint = 0;
 		this.el = buildEntity(this);
+		this.lifeBars = {
+			main: null,
+			life: null,
+			grey: null
+		};
+		[this.lifeBars.main, this.lifeBars.life, this.lifeBars.grey] = lifeBar();
+		this.el.appendChild(this.lifeBars.main);
 
 		const scene = document.querySelector('a-scene');
 		scene?.appendChild(this.el);
@@ -104,6 +118,20 @@ export class Unit {
 			)
 		];
 	}
+	get directionVector(): Vector3 {
+		switch (this.direction) {
+			case 'N':
+				return new Vector3(0, 0, -1);
+			case 'S':
+				return new Vector3(0, 0, 1);
+			case 'E':
+				return new Vector3(1, 0, 0);
+			case 'W':
+				return new Vector3(-1, 0, 0);
+			default:
+				return new Vector3(0, 0, 0);
+		}
+	}
 	giveDamage(damage: number): void {
 		if (!this.actor) return;
 
@@ -141,18 +169,30 @@ export class Unit {
 		const skill = this.actor?.skills.find((skill) => skill.name == skillName);
 		return skill ? skill.level : 6;
 	}
+	resetState(): void {
+		const triangles = this.el.querySelector('.triangles');
+		if (triangles) {
+			this.el.removeChild(triangles);
+		}
+		const inTurnIndicator = this.el.querySelector('.in-turn-indicator');
+		if (inTurnIndicator) {
+			this.el.removeChild(inTurnIndicator);
+		}
+	}
 	changeState(state: unitState) {
+		this.resetState();
 		switch (state) {
 			case 'idle':
-				{
-					const triangles = this.el.querySelector('.triangles');
-					if (triangles && triangles.parentNode) {
-						triangles.parentNode.removeChild(triangles);
-					}
+				//this.resetState()
+				if (TURN.unit?.id == this.id) {
+					this.changeState('inTurn');
 				}
 				break;
 			case 'directing':
 				this.el.appendChild(triangles());
+				break;
+			case 'inTurn':
+				this.el.appendChild(inTurnIndicator());
 				break;
 		}
 		this.state = state;
@@ -167,6 +207,7 @@ export class Unit {
 
 		await moveToTile(path, this.el);
 		this.changeState('directing');
+		STAGE.changeState('selectingDirection');
 		this.tile = STAGE.tiles.find((tile) => tile.id == path.tileId) || null;
 		const consumingTaskPoint = path.consumedPoints / this.speed;
 		this.consumeTaskPoint(consumingTaskPoint);

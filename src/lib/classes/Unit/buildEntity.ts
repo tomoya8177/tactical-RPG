@@ -16,12 +16,6 @@ export const buildEntity = (unit: Unit) => {
     shader:flat;`
 	});
 	entity.appendChild(model);
-	unit.lifeBars = {
-		main: null,
-		life: null,
-		grey: null
-	};
-	[unit.lifeBars.main, unit.lifeBars.life, unit.lifeBars.grey] = lifeBar();
-	entity.appendChild(unit.lifeBars.main);
+
 	return entity;
 };
