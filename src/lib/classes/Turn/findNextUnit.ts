@@ -1,8 +1,9 @@
-import { units } from '$lib/stores/unitStore';
+import { STAGE } from '../Stage/Stage';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 
-export const findNextUnit = () => {
-	let nextUnit = units.getAll()[0];
-	units.getAll().forEach((unit) => {
+export const findNextUnit = (): Unit => {
+	let nextUnit = STAGE.units[0];
+	STAGE.units.forEach((unit) => {
 		if (nextUnit.currentWaitTurn > unit.currentWaitTurn) {
 			nextUnit = unit;
 		}

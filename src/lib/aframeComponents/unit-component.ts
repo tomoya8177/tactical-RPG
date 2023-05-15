@@ -1,9 +1,8 @@
 import { ATTACK } from '$lib/classes/Attack/Attack';
 import { STAGE } from '$lib/classes/Stage/Stage';
 import { TURN } from '$lib/classes/Turn/Turn';
-import type { Unit } from '$lib/classes/Unit/Unit';
+import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 import { uiController } from '$lib/stores/uiControllerStore';
-import { units } from '$lib/stores/unitStore';
 import type { direction } from '$lib/types/direction';
 import 'aframe';
 import type { Entity } from 'aframe';
@@ -18,17 +17,17 @@ AFRAME.registerComponent('unit-component', {
 		tiles: { type: 'array', default: [] }
 	},
 	init: function () {
-		this.unit = units.getOne(Number(this.el.id));
+		this.unit = STAGE.units.find((unit) => unit.id == Number(this.el.id));
 
-		units.subscribe((array) => {
-			this.unit = units.getOne(Number(this.el.id));
-		});
 		this.el.addEventListener('click', async (event) => {
 			if (!this.unit) return;
 			console.log('clicked', this.unit, event.target, this.data.state);
 			switch (this.unit.state) {
 				case 'idle':
-					STAGE.resetAllTiles();
+				case 'inTurn':
+					console.log('stage state', STAGE.state);
+					if (STAGE.state == 'attack') return;
+					STAGE.changeState('idle');
 					if (this.unit.id != TURN.unit?.id) {
 						uiController.hide('actionMenu');
 					}
@@ -40,7 +39,7 @@ AFRAME.registerComponent('unit-component', {
 					uiController.show('actorData');
 					break;
 				case 'target': {
-					STAGE.resetAllTiles();
+					STAGE.tiles.reset();
 					ATTACK.setFoe(this.unit);
 
 					break;

@@ -8,8 +8,14 @@ export const bodyParts = {
 	leftArm: {
 		title: 'Left Arm'
 	},
+	leftHand: {
+		title: 'Left Hand'
+	},
 	rightArm: {
 		title: 'Right Arm'
+	},
+	rightHand: {
+		title: 'Right Hand'
 	},
 	leftLeg: {
 		title: 'Left Leg'

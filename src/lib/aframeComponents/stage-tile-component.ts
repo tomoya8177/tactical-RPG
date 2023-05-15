@@ -1,5 +1,5 @@
 import { STAGE } from '$lib/classes/Stage/Stage';
-import { Tile } from '$lib/classes/Tile/Tile';
+import { Tile } from '$lib/classes/Stage/Tiles/Tile/Tile';
 import 'aframe';
 import type { Entity } from 'aframe';
 AFRAME.registerComponent('stage-tile-component', {
@@ -8,6 +8,7 @@ AFRAME.registerComponent('stage-tile-component', {
 		this.el.addEventListener('click', () => {
 			switch (this.tile.state) {
 				case 'destination':
+					if (STAGE.state != 'moving') return;
 					STAGE.moveUnit(Number(this.el.id));
 					break;
 			}

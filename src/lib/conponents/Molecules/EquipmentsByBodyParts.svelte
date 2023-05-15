@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Equipment, bodyParts } from '$lib/classes/Equipment/Equipment';
-	import type { Unit } from '$lib/classes/Unit/Unit';
+	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import WeaponTag from '../Atoms/WeaponTag.svelte';
 	type TempEquipment = Equipment & { tempId: number };
 	type dummyEquipment = { name: string; equippedOn: string };
@@ -23,12 +23,11 @@
 							class:selected={selectedEquipment == equipment}
 							on:click={() => onEquipmentClicked(equipment)}
 						>
-							{equipment.name}
 							<WeaponTag weapon={equipment} level={unit.getLv(equipment.skillToUse)} />
 						</button>
 					</li>
 				{/each}
-				{#if selectedEquipment}
+				{#if selectedEquipment && selectedEquipment.equippedOn != key}
 					<button on:click={() => onTakeSpotClicked(key)}>Take this spot</button>
 				{/if}
 			</ul>
@@ -37,6 +36,12 @@
 </div>
 
 <style>
+	ul {
+		padding: 0;
+	}
+	li {
+		list-style: none;
+	}
 	.selected {
 		background-color: red;
 	}

@@ -27,7 +27,7 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 1,
 				rangeType: 'direct',
-				equippedOn: 'rightArm'
+				equippedOn: 'rightHand'
 			}),
 			new Equipment({
 				name: 'Spear',

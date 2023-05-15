@@ -2,9 +2,12 @@
 	import EquipmentsByBodyParts from '../Molecules/EquipmentsByBodyParts.svelte';
 
 	import { cancelButtonController } from '$lib/cancelButtonController';
-	import { Equipment, bodyParts } from '$lib/classes/Equipment/Equipment';
-	import type { Unit } from '$lib/classes/Unit/Unit';
+	import type { Equipment } from '$lib/classes/Equipment/Equipment';
+	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import { onDestroy, onMount } from 'svelte';
+	import { STAGE } from '$lib/classes/Stage/Stage';
+	import { listen } from 'svelte/internal';
+	import { uiController } from '$lib/stores/uiControllerStore';
 	export let unit: Unit;
 	type TempEquipment = Equipment & { tempId: number };
 	type dummyEquipment = { name: string; equippedOn: string };
@@ -17,14 +20,25 @@
 		equipments = equipments;
 	});
 	onDestroy(() => {
-		console.log('onDestroy');
 		equipments = [];
 	});
 
 	let selectedEquipment: TempEquipment | dummyEquipment | null = null;
+	const handleKeyDown = (e) => {
+		if (e.key === 'Escape') {
+			selectedEquipment = null;
+			document.removeEventListener('keydown', handleKeyDown);
+		}
+	};
+	let handleKeyDownListener = null;
 	const onEquipmentClicked = (equipment: TempEquipment | dummyEquipment) => {
 		if (!selectedEquipment) {
 			selectedEquipment = equipment;
+			STAGE.changeState('equipmentSelected');
+			handleKeyDownListener = (e) => {
+				handleKeyDown(e);
+			};
+			document.addEventListener('keydown', handleKeyDownListener);
 			return;
 		}
 		const eq1 = equipment.equippedOn;
@@ -52,7 +66,8 @@
 		);
 		//unit.actor.equipments = [...equipments];
 		unit.consumeTaskPoint(0.5);
-		cancelButtonController();
+		STAGE.changeState('idle');
+		//		cancelButtonController();
 	};
 	const onAbortClicked = () => {
 		cancelButtonController();
@@ -64,8 +79,16 @@
 </script>
 
 <div class="equipment-menu">
-	<EquipmentsByBodyParts {equipments} {onEquipmentClicked} {onTakeSpotClicked} {unit} />
-	<button on:click={() => onThrowAwayClicked()}>Throw away</button>
+	<EquipmentsByBodyParts
+		{selectedEquipment}
+		{equipments}
+		{onEquipmentClicked}
+		{onTakeSpotClicked}
+		{unit}
+	/>
+	{#if selectedEquipment}
+		<button on:click={() => onThrowAwayClicked()}>Throw away</button>
+	{/if}
 	<button on:click={() => onOKClicked()}>OK</button>
 	<button on:click={() => onAbortClicked()}>Abort</button>
 </div>

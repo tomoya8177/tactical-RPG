@@ -1,4 +1,4 @@
-import { Tile } from '../Tile/Tile';
+import { Tile } from './Tiles/Tile/Tile';
 export const testStage = (x: number, z: number, y: number | null = null): Tile[] => {
 	const checkYIsTooDifferent = (y) => {
 		const prevTile = stageTiles.find((tile) => tile.id == count - 1);

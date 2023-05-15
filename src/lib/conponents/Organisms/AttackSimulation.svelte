@@ -53,7 +53,7 @@
 				{/each}
 			</div>
 			<div>
-				{ATTACK.foe.currentTaskPoint} / 3
+				{showDecimal(ATTACK.foe.currentTaskPoint, 2)} / 3
 			</div>
 		</div>
 	{/if}

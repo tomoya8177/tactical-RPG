@@ -2,7 +2,7 @@ import type { path, step } from '$lib/types/path';
 import type { xyz } from '$lib/types/xyz';
 import { findNextTile } from './findNextTile';
 import { checkIfUnitCanMoveToTile } from './checkIfUnitCanMovetoTile';
-import type { Tile } from '../Tile/Tile';
+import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import type { direction } from '$lib/types/direction';
 
 export interface step {
@@ -20,7 +20,6 @@ export interface path {
 	position: xyz;
 	consumedPoints: number;
 }
-
 
 export class Pathfinder {
 	paths: Array<path>;

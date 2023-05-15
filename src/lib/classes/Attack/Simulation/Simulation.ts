@@ -1,5 +1,5 @@
 import type { Equipment } from '$lib/classes/Equipment/Equipment';
-import type { Unit } from '$lib/classes/Unit/Unit';
+import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 import type { Entity } from 'aframe';
 import { Box3, Vector3 } from 'three';
 import { getAngleForRangedAttack } from './getAngleForRangedAttack';

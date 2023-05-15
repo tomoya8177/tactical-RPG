@@ -1,4 +1,4 @@
-import type { Unit } from '../Unit/Unit';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 import type { Equipment } from '../Equipment/Equipment';
 import { uiController } from '$lib/stores/uiControllerStore';
 import { findTargetTiles } from './findTargetTiles';
@@ -6,8 +6,7 @@ import { findUnitOnTile } from './findUnitOnTile';
 import { TURN } from '../Turn/Turn';
 import { STAGE } from '../Stage/Stage';
 import { attackTarget } from './attackTarget';
-import { units } from '$lib/stores/unitStore';
-import type { Tile } from '../Tile/Tile';
+import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import { Simulation } from './Simulation/Simulation';
 export const ticksPerSecond = 60;
 
@@ -17,13 +16,7 @@ export interface attackResult {
 	damage: number;
 }
 
-type state =
-	| 'idle'
-	| 'selectingWeapon'
-	| 'selectingTarget'
-	| 'simulating'
-	| 'executing'
-	| 'finished';
+type state = 'idle' | 'selectingTarget' | 'simulating' | 'executing' | 'finished';
 
 class Attack {
 	state: state = 'idle';
@@ -44,27 +37,25 @@ class Attack {
 	init(attacker: Unit | null = null, tile: Tile | null = null): void {
 		if (!TURN.unit) return;
 		if (!attacker) attacker = TURN.unit;
-		if (!tile) tile = STAGE.findTiles(attacker?.x, attacker?.z)[0];
+		if (!tile) tile = STAGE.tiles.findByXZ(attacker.x, attacker.z)[0];
 		this.attacker = attacker;
 		this.attacker.tile = tile;
-		this.changeState('selectingWeapon');
+		STAGE.changeState('selectingWeapon');
+		//		this.changeState('selectingWeapon');
 	}
 
-	async changeState(state: state): void {
+	async changeState(state: state): Promise<void> {
 		switch (state) {
 			case 'idle':
 				break;
-			case 'selectingWeapon':
-				uiController.hide('actionMenu');
-				uiController.show('chooseWeaponMenu');
-				break;
+
 			case 'selectingTarget':
-				if (!this.attacker || !this.weapon) return;
+				if (!this.attacker || !this.weapon) throw new Error('attacker is null');
 				uiController.hide('attackSimulation');
 				this.simulation?.removeCurves();
 				const attackTargetTiles = findTargetTiles(this.attacker, this.weapon, STAGE.tiles);
 				attackTargetTiles.forEach((tile) => {
-					if (tile.id == '' || !TURN.unit) return;
+					if (tile.id == '' || !TURN.unit) throw new Error('tile is null');
 					const targetUnit = findUnitOnTile(tile.id, STAGE.tiles);
 					if (targetUnit && targetUnit.id != TURN.unit.id) {
 						targetUnit.highlightAttackTarget();
@@ -73,7 +64,8 @@ class Attack {
 				});
 				break;
 			case 'simulating':
-				if (!this.attacker || !this.foe || !this.attacker.tile || !this.weapon) return;
+				if (!this.attacker || !this.foe || !this.attacker.tile || !this.weapon)
+					throw new Error('attacker is null');
 				this.simulation = new Simulation(this.attacker, this.foe, this.weapon);
 				uiController.hide('actorData');
 				const simulationResult = await this.simulation.simulate();
@@ -87,12 +79,12 @@ class Attack {
 
 				break;
 			case 'finished':
+				if (!this.attacker) throw new Error('attacker is null');
+				STAGE.focusOnUnit(this.attacker);
 				this.attacker = null;
 				this.weapon = null;
 				this.foe = null;
-				STAGE.highlightUnit();
 				STAGE.changeState('idle');
-				uiController.show('actionMenu');
 				break;
 		}
 		this.state = state;
@@ -104,7 +96,7 @@ class Attack {
 	setFoe(foe: Unit): void {
 		this.foe = foe;
 		this.changeState('simulating');
-		units.getAll().forEach((unit) => {
+		STAGE.units.forEach((unit) => {
 			unit.changeState('idle');
 		});
 	}
@@ -126,7 +118,7 @@ class Attack {
 		}
 		if (result.foeIsDead) {
 			this.foe.remove();
-			units.remove(this.foe);
+			STAGE.units.remove(this.foe);
 		}
 		this.changeState('finished');
 	}

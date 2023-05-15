@@ -1,5 +1,5 @@
 import { radians2degrees } from '$lib/Maths/radian2degrees';
-import type { Unit } from '$lib/classes/Unit/Unit';
+import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 import type { Entity } from 'aframe';
 import { Vector3 } from 'three';
 const southVector = new Vector3(0, 0, 1);

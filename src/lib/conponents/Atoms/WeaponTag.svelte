@@ -6,4 +6,4 @@
 </script>
 
 {weapon.name}
-(SkillLv:{level})
+(Lv: {level})

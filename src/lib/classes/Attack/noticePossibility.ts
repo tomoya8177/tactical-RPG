@@ -1,5 +1,5 @@
 import { Vector3 } from 'three';
-import type { Unit } from '../Unit/Unit';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
 
 export const noticePossibility = (attacker: Unit, foe: Unit) => {

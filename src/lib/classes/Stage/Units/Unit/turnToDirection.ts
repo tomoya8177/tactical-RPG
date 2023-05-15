@@ -40,6 +40,7 @@ export const turnToDirection = (yRotation: number, direction: direction, unitEl:
 		'animation',
 		`property:rotation;
 			 to: 0 ${to} 0;
+			 from: 0 ${yRotation} 0;
 			  dur:${systemConfig.moveAnimationSeconds};loop:1;delay:0`
 	);
 	return finalDirection(to);

@@ -4,8 +4,7 @@
 	import 'aframe-extras';
 	import '$lib/aframeComponents';
 	import { STAGE } from '$lib/classes/Stage/Stage';
-	import { Unit } from '$lib/classes/Unit/Unit';
-	import { units } from '$lib/stores/unitStore';
+	import { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import { Actor } from '$lib/classes/Actor/Actor';
 	import { uiController } from '$lib/stores/uiControllerStore';
 	import { onMount } from 'svelte';
@@ -16,9 +15,8 @@
 	import ChooseWeaponMenu from '$lib/conponents/Organisms/ChooseWeaponMenu.svelte';
 	import AttackSimulation from '$lib/conponents/Organisms/AttackSimulation.svelte';
 	import EquipmentMenu from '$lib/conponents/Organisms/EquipmentMenu.svelte';
+	import AmbushConfirmationMenu from '$lib/conponents/Organisms/AmbushConfirmationMenu.svelte';
 	let cameraDistance: number = 5;
-
-	let initialTile = STAGE.findTiles()[0];
 
 	onMount(() => {
 		if (!document) return;
@@ -30,9 +28,10 @@
 			for (let i = 0; i < 8; i++) {
 				let actor: Actor = new Actor();
 				console.log({ actor });
-				let initialTile = STAGE.findTiles()[0];
+				let initialTile = STAGE.tiles.getRandomWalkableTile();
 				let unit = new Unit(i, 'actor', actor, initialTile);
-				units.add([unit]);
+				//add([unit]);
+				STAGE.units.push(unit);
 			}
 			TURN.start();
 		});
@@ -53,6 +52,9 @@
 {/if}
 {#if $uiController.attackSimulation}
 	<AttackSimulation />
+{/if}
+{#if $uiController.ambushConfirmationMenu && TURN.unit && STAGE.ambushes.of(TURN.unit)}
+	<AmbushConfirmationMenu ambush={STAGE.ambushes.of(TURN.unit)} />
 {/if}
 <a-scene
 	id="scene"
@@ -96,5 +98,5 @@
 			/>
 		</a-entity>
 	</a-entity>
-	<a-entity id="tiles" />
+	<a-entity id="tilesContainer" />
 </a-scene>

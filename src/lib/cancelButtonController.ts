@@ -3,12 +3,12 @@ import { CAMERA } from './classes/Camera/Camera';
 import { STAGE } from './classes/Stage/Stage';
 import { TURN } from './classes/Turn/Turn';
 import { uiController } from './stores/uiControllerStore';
-import { units } from './stores/unitStore';
 
 export const cancelButtonController = () => {
 	switch (STAGE.state) {
 		case 'idle':
 			uiController.hide('actorData');
+			STAGE.tiles.reset();
 			if (TURN.unit) {
 				STAGE.focusOnUnit(TURN.unit);
 				uiController.show('actionMenu');
@@ -19,6 +19,7 @@ export const cancelButtonController = () => {
 			STAGE.changeState('idle');
 			break;
 		case 'selectingWeapon':
+		case 'selectingWeaponForAmbush':
 			STAGE.changeState('idle');
 			if (TURN.unit) {
 				STAGE.focusOnUnit(TURN.unit);
@@ -27,11 +28,9 @@ export const cancelButtonController = () => {
 		case 'attack':
 			switch (ATTACK.state) {
 				case 'selectingTarget':
-					ATTACK.changeState('selectingWeapon');
-
-					STAGE.resetAllTiles();
+					STAGE.tiles.reset();
 					STAGE.changeState('selectingWeapon');
-					units.getAll().forEach((unit) => {
+					STAGE.units.forEach((unit) => {
 						unit.changeState('idle');
 					});
 					if (!TURN.unit) return;
@@ -46,6 +45,9 @@ export const cancelButtonController = () => {
 			uiController.show('actionMenu');
 			uiController.hide('equipmentMenu');
 			STAGE.changeState('idle');
+			break;
+		case 'equipmentSelected':
+			STAGE.changeState('equipment');
 			break;
 	}
 };

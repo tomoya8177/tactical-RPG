@@ -1,7 +1,6 @@
 import { uiController } from '$lib/stores/uiControllerStore';
-import { units } from '$lib/stores/unitStore';
 import { STAGE } from '../Stage/Stage';
-import type { Unit } from '../Unit/Unit';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 import { findNextUnit } from './findNextUnit';
 
 class Turn {
@@ -13,6 +12,7 @@ class Turn {
 		if (!unit) unit = findNextUnit();
 		this.unit = unit;
 		this.unit.resetTaskPoint();
+		STAGE.ambushes.clearFor(this.unit);
 		await STAGE.focusOnUnit(this.unit);
 		STAGE.changeState('idle');
 		this.unit.changeState('inTurn');
@@ -20,7 +20,7 @@ class Turn {
 	}
 	end() {
 		if (!this.unit) return;
-		units.getAll().forEach((unit) => {
+		STAGE.units.forEach((unit) => {
 			if (!this.unit) return;
 			if (this.unit.id == unit.id) return;
 			unit.consumeWaitTurn(this.unit?.currentWaitTurn);
@@ -31,7 +31,7 @@ class Turn {
 		uiController.hide('actorData');
 		uiController.hide('actionMenu');
 
-		STAGE.resetAllTiles();
+		STAGE.tiles.reset();
 		this.unit.resetState();
 		this.unit = null;
 		this.start();

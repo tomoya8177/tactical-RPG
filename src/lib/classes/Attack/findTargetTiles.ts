@@ -1,7 +1,7 @@
 import { Box3, Vector3 } from 'three';
 import type { Equipment } from '../Equipment/Equipment';
-import type { Tile } from '../Tile/Tile';
-import type { Unit } from '../Unit/Unit';
+import type { Tile } from '../Stage/Tiles/Tile/Tile';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 import type { Entity } from 'aframe';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
 

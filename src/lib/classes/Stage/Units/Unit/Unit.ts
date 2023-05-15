@@ -1,7 +1,7 @@
 import { systemConfig } from '$lib/systemConfig';
 import type { xyz } from '$lib/types/xyz';
 import type { Entity } from 'aframe';
-import type { Actor } from '../Actor/Actor';
+import type { Actor } from '../../../Actor/Actor';
 import { moveToTile } from './moveToTile';
 import { turnToDirection } from './turnToDirection';
 import type { direction } from '$lib/types/direction';
@@ -9,13 +9,13 @@ import { showDecimal } from '$lib/Maths/showDecimal';
 import { createAframeEntity } from '$lib/createAframeEntity';
 import { lifeBar, updateLifeBar } from './lifeBar';
 import { triangles } from './triangles';
-import type { Tile } from '../Tile/Tile';
-import type { path } from '../Pathfinder/Pathfinder';
-import { STAGE } from '../Stage/Stage';
+import type { Tile } from '../../Tiles/Tile/Tile';
+import type { path } from '../../../Pathfinder/Pathfinder';
+import { STAGE } from '../../Stage';
 import { Vector3 } from 'three';
-import type { Equipment } from '../Equipment/Equipment';
+import type { Equipment } from '../../../Equipment/Equipment';
 import { buildEntity } from './buildEntity';
-import { TURN } from '../Turn/Turn';
+import { TURN } from '../../../Turn/Turn';
 import { inTurnIndicator } from './inTurnIndicator';
 export type unitState = 'idle' | 'target' | 'focused' | 'directing' | 'inTurn';
 export class Unit {
@@ -144,7 +144,8 @@ export class Unit {
 			'look-at-camera': '',
 			position: '0 2.2 0',
 			align: 'center',
-			value: message
+			value: message,
+			font: systemConfig.popUpFont
 		});
 		this.el.appendChild(resultText);
 		setTimeout(() => {

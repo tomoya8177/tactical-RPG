@@ -2,26 +2,36 @@
 	import { ATTACK } from '$lib/classes/Attack/Attack';
 	import type { Equipment } from '$lib/classes/Equipment/Equipment';
 	import { STAGE } from '$lib/classes/Stage/Stage';
-	import type { Unit } from '$lib/classes/Unit/Unit';
+	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import { uiController } from '$lib/stores/uiControllerStore';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
 	import WeaponTag from '../Atoms/WeaponTag.svelte';
+	import { TURN } from '$lib/classes/Turn/Turn';
 	export let unit: Unit;
 	onMount(() => {
 		console.log({ unit });
 	});
-	const onWeaponClicked = (weapon: Equipment, i: number) => {
+	const onWeaponClicked = async (weapon: Equipment, i: number) => {
 		uiController.hide('chooseWeaponMenu');
-		ATTACK.setWeapon(weapon);
-		STAGE.state = 'attack';
+		if (STAGE.state == 'selectingWeapon') {
+			ATTACK.setWeapon(weapon);
+			STAGE.state = 'attack';
+		}
+		if (STAGE.state == 'selectingWeaponForAmbush') {
+			if (!TURN.unit) return console.error('TURN.unit is null');
+			const AMBUSH = STAGE.ambushes.of(TURN.unit);
+			AMBUSH.setWeapon(weapon);
+			AMBUSH.highlightRange();
+			STAGE.changeState('ambush');
+		}
 	};
 </script>
 
 <div class="choose-weapon-menu" transition:fade>
 	<button>Punch</button>
 	<button>Kick</button>
-	{#each unit?.actor?.equipments.filter((equipment) => equipment.equippedOn == 'rightArm' || equipment.equippedOn == 'leftArm') || [] as weapon, i}
+	{#each unit?.actor?.equipments.filter((equipment) => equipment.equippedOn == 'rightHand' || equipment.equippedOn == 'leftHand') || [] as weapon, i}
 		<button
 			on:click={() => onWeaponClicked(weapon, i)}
 			disabled={unit?.currentTaskPoint - 0.7 < weapon.attackCost}

@@ -2,7 +2,7 @@ import { roll3d6 } from '$lib/Maths/dice3d6';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
 import type { attackResult } from '$lib/types/attackResult';
 import { Vector3 } from 'three';
-import type { Unit } from '../Unit/Unit';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 import type { Equipment } from '../Equipment/Equipment';
 import { systemConfig } from '$lib/systemConfig';
 import { noticePossibility } from './noticePossibility';

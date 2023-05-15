@@ -1,5 +1,5 @@
 import type { Equipment } from '../Equipment/Equipment';
-import type { Unit } from '../Unit/Unit';
+import type { Unit } from '../Stage/Units/Unit/Unit';
 
 export const getDamage = (attacker: Unit, foe: Unit, weapon: Equipment): number => {
 	const giveDamageBonus = () => {

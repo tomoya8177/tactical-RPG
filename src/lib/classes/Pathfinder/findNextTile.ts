@@ -1,6 +1,6 @@
 import type { direction } from '$lib/types/direction';
 import type { xyz } from '$lib/types/xyz';
-import type { Tile } from '../Tile/Tile';
+import type { Tile } from '../Stage/Tiles/Tile/Tile';
 
 export const findNextTile = (tiles: Array<Tile>, direction: direction, position: xyz) => {
 	let nextTile = tiles.find((tile) => {

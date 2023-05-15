@@ -2,7 +2,7 @@
 	import { showDecimal } from '$lib/Maths/showDecimal';
 	import { STAGE } from '$lib/classes/Stage/Stage';
 	import { TURN } from '$lib/classes/Turn/Turn';
-	import type { Unit } from '$lib/classes/Unit/Unit';
+	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import { fade } from 'svelte/transition';
 	export let unit: Unit;
 </script>

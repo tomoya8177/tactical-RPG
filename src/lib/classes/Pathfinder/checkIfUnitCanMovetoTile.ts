@@ -1,4 +1,4 @@
-import type { Tile } from '../Tile/Tile';
+import type { Tile } from '../Stage/Tiles/Tile/Tile';
 
 export const checkIfUnitCanMoveToTile = (nextTile: Tile) => {
 	if (!nextTile) {

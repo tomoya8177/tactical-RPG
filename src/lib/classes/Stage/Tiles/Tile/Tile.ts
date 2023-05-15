@@ -1,12 +1,12 @@
-import type { Unit } from '$lib/classes/Unit/Unit';
+import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 import type { xyz } from '$lib/types/xyz';
 import { Vector3 } from 'three';
-import { getAngleForRangedAttack } from '../Attack/Simulation/getAngleForRangedAttack';
+import { getAngleForRangedAttack } from '../../../Attack/Simulation/getAngleForRangedAttack';
 import type { Equipment } from '$lib/classes/Equipment/Equipment';
-import { units } from '$lib/stores/unitStore';
 import type { Entity } from 'aframe';
 import { createAframeEntity } from '$lib/createAframeEntity';
 import { buildEntity } from './buildEntity';
+import { STAGE } from '../../Stage';
 type state = 'idle' | 'focus' | 'destination' | 'target';
 export type tileMaterial =
 	| 'dirt'
@@ -68,7 +68,7 @@ export class Tile {
 		return this.position.z;
 	}
 	get occupiedBy(): Unit | null {
-		return units.getAll().find((unit) => unit.tile?.id == this.id) || null;
+		return STAGE.units.find((unit) => unit.tile?.id == this.id) || null;
 	}
 
 	ifInDirectRange(attackOrigin: Vector3, range: number) {

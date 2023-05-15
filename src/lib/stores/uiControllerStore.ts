@@ -5,6 +5,7 @@ export type uiControllerType = {
 	chooseWeaponMenu: boolean;
 	attackSimulation: boolean;
 	equipmentMenu: boolean;
+	ambushConfirmationMenu: boolean;
 };
 export const uiControllerStore = writable({} as uiControllerType);
 

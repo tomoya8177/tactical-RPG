@@ -1,23 +1,28 @@
 import { testStage } from '$lib/classes/Stage/testStage';
 import { uiController } from '$lib/stores/uiControllerStore';
-import { units } from '$lib/stores/unitStore';
 import { Pathfinder, type path } from '../Pathfinder/Pathfinder';
-import type { Unit } from '../Unit/Unit';
-import { Tile } from '../Tile/Tile';
+import type { Unit } from './Units/Unit/Unit';
+import { Tile } from './Tiles/Tile/Tile';
 import { CAMERA } from '../Camera/Camera';
 import type { Entity } from 'aframe';
 import { TURN } from '../Turn/Turn';
 import { Box3 } from 'three';
+import { Tiles } from './Tiles/Tiles';
+import { Units } from './Units/Units';
+import { Ambushes } from './Ambushes/Ambushes';
 const PATHFINDER = new Pathfinder();
 type state =
 	| 'idle'
 	| 'selectingWeapon'
 	| 'attack'
+	| 'selectingWeaponForAmbush'
+	| 'ambush'
 	| 'selectingDestination'
 	| 'moving'
 	| 'selectingDirection'
 	| 'defencing'
 	| 'equipment'
+	| 'equipmentSelected'
 	| 'exchangingEquipment'
 	| 'pickpocketing'
 	| 'firstAid';
@@ -25,7 +30,9 @@ class Stage {
 	id: string | null;
 	isTest: boolean;
 	state: state | null = null;
-	tiles: Array<Tile> = [];
+	tiles: Tiles = new Tiles();
+	units: Units = new Units();
+	ambushes: Ambushes = new Ambushes();
 	unitOnFocus: Unit | null;
 	paths: Array<path> = [];
 	structures: Array<Box3> = [];
@@ -35,11 +42,12 @@ class Stage {
 		this.unitOnFocus = null;
 	}
 	init(): void {
-		const tiles = document.getElementById('tiles');
+		const tilesEl = document.getElementById('tilesContainer');
+		console.log('stage init');
 		if (this.isTest) {
-			this.tiles = testStage(20, 20);
+			this.tiles.init(testStage(20, 20));
 			this.tiles.forEach((tile) => {
-				tiles?.appendChild(tile.el);
+				tilesEl?.appendChild(tile.el);
 				//tile.el.setAttribute('position', tile.position);
 			});
 		}
@@ -52,28 +60,25 @@ class Stage {
 		console.log({ structures: this.structures });
 	}
 
-	hideAttackableTiles(): void {
-		this.tiles.forEach((tile) => {
-			tile.changeState('idle');
-		});
-	}
-	resetAllTiles(): void {
-		this.tiles.forEach((tile) => {
-			tile.changeState('idle');
-		});
-	}
 	changeState(state: state) {
 		console.log('changing stage state', { state });
 		switch (state) {
 			case 'idle':
+				uiController.hide('equipmentMenu');
 				uiController.hide('chooseWeaponMenu');
 				uiController.show('actionMenu');
+				uiController.hide('ambushConfirmationMenu');
+				this.tiles.reset();
 				break;
 			case 'selectingWeapon':
+			case 'selectingWeaponForAmbush':
+				uiController.hide('ambushConfirmationMenu');
 				uiController.hide('actionMenu');
-				this.resetAllTiles();
+				this.tiles.reset();
 				uiController.show('chooseWeaponMenu');
 				break;
+			case 'ambush':
+				uiController.show('ambushConfirmationMenu');
 		}
 		this.state = state;
 	}
@@ -93,14 +98,6 @@ class Stage {
 		return Promise.resolve(true);
 	}
 
-	findTiles(x: number | null = null, z: number | null = null): Array<Tile> {
-		if (x == null && z == null) {
-			const grounds = this.tiles.filter((tile) => tile.type == 'walkable');
-			const tile = grounds[Math.round(Math.random() * grounds.length - 1)];
-			return [tile];
-		}
-		return this.tiles.filter((tile) => tile.x == x && tile.z == z);
-	}
 	findPath(unit: Unit): Array<path> {
 		PATHFINDER.init(
 			this.tiles.map((tile) => {
@@ -126,9 +123,9 @@ class Stage {
 	}
 
 	async moveUnit(tileId: number): Promise<void> {
-		this.resetAllTiles();
+		this.tiles.reset();
 		const path = this.paths.find((path) => path.tileId == tileId);
-		const UNIT = units.getAll().find((unit) => unit.id == TURN.unit?.id);
+		const UNIT = STAGE.units.find((unit) => unit.id == TURN.unit?.id);
 		if (!UNIT) return;
 		uiController.hide('actorData');
 		uiController.hide('actionMenu');
