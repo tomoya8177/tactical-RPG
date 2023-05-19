@@ -7,6 +7,7 @@ import type { Equipment } from '../Equipment/Equipment';
 import { systemConfig } from '$lib/systemConfig';
 import { noticePossibility } from './noticePossibility';
 import { getDamage } from './getDamage';
+import type { unitStatus } from './Attack';
 export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): attackResult => {
 	const checkIfAttackHits = () => {
 		const skillLv = attacker.getLv(equipment.skillToUse);
@@ -22,20 +23,18 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 		return roll3d6(dodge).result;
 	};
 	const checkIfFoeCanParry = () => {
-		let [weapon, parry] = foe.parry;
-		return roll3d6(parry).result;
+		const parries = foe.parry;
+		return roll3d6(parries[0].level).result;
 	};
-	const giveDamageToFoe = () => {
-		const damage = getDamage(attacker, foe, equipment);
-		foe.giveDamage(damage);
-		return damage;
-	};
+
+	const givenState: typeof unitStatus = [];
 	if (!checkIfAttackHits()) {
 		foe.promptResult('Miss');
 
 		return {
 			result: 'miss',
 			damage: 0,
+			givenState: [],
 			foeIsDead: false
 		};
 	}
@@ -47,6 +46,7 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 			return {
 				result: 'dodge',
 				damage: 0,
+				givenState: [],
 				foeIsDead: false
 			};
 		}
@@ -56,24 +56,33 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 			return {
 				result: 'parry',
 				damage: 0,
+
+				givenState: [],
 				foeIsDead: false
 			};
 		}
 	}
-	const damage = giveDamageToFoe();
+	const damage = getDamage(attacker, foe, equipment);
+	if (!!foe.actor && damage > foe.actor.HT / 2) {
+		givenState.push('down');
+	}
+	//	const damage = giveDamageToFoe();
 	if (damage === 'error') {
 		return {
 			result: 'error',
 			damage: 0,
+			givenState: [],
 			foeIsDead: false
 		};
 	}
 	if (foe.life <= 0) {
 		foe.addStatus('dead');
 	}
+
 	return {
 		result: 'hit',
 		damage: damage,
+		givenState,
 		foeIsDead: foe.life <= 0
 	};
 };

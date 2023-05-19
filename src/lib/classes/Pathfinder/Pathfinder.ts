@@ -4,6 +4,8 @@ import { findNextTile } from './findNextTile';
 import { checkIfUnitCanMoveToTile } from './checkIfUnitCanMovetoTile';
 import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import type { direction } from '$lib/types/direction';
+import type { Ambush } from '../Stage/Ambushes/Ambush/Ambush';
+import type { attackResult } from '../Attack/Attack';
 
 export interface step {
 	tileId: number | '';
@@ -12,6 +14,10 @@ export interface step {
 	endPosition: xyz | null;
 	startYRotation: number | null;
 	endYRotation: number | null;
+	ambushes: Array<{
+		ambush: Ambush;
+		attackResult: attackResult;
+	}>;
 }
 
 export interface path {
@@ -62,7 +68,8 @@ export class Pathfinder {
 				startPosition: position,
 				endPosition: nextTile.position,
 				startYRotation: null,
-				endYRotation: null
+				endYRotation: null,
+				ambushes: []
 			}
 		];
 		const newPath: path = {
@@ -158,7 +165,8 @@ export class Pathfinder {
 					endPosition: position,
 					movement: 'TL',
 					startYRotation,
-					endYRotation
+					endYRotation,
+					ambushes: []
 				}
 			];
 			const consumedPoints = 2;
@@ -209,7 +217,8 @@ export class Pathfinder {
 					startPosition: position,
 					endPosition: position,
 					startYRotation,
-					endYRotation
+					endYRotation,
+					ambushes: []
 				}
 			];
 			const consumedPoints = 2;

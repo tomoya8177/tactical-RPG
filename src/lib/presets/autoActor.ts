@@ -61,7 +61,7 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 10,
 				rangeType: 'ranged',
-				equippedOn: 'back'
+				equippedOn: 'leftHand'
 			})
 		],
 		skills: [
@@ -75,7 +75,7 @@ export const autoActor = (): Actor => {
 			},
 			{
 				name: 'Crossbow',
-				level: Math.round(10 * Math.random()) + 5
+				level: 15
 			}
 		]
 	};

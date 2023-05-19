@@ -8,26 +8,27 @@ export const triangles = () => {
 		let direction = '';
 		switch (i) {
 			case 0:
-				direction = 'N';
+				direction = 'Front';
 				break;
 			case 1:
-				direction = 'S';
+				direction = 'Left';
 				break;
 			case 2:
-				direction = 'W';
+				direction = 'Right';
 				break;
 			case 3:
-				direction = 'E';
+				direction = 'Back';
 				break;
 		}
 		const entity = createAframeEntity('a-entity', {
-			rotation: `0 ${direction == 'S' ? 180 : ''}${direction == 'N' ? 0 : ''}${
-				direction == 'W' ? 270 : ''
-			}${direction == 'E' ? 90 : ''} 0`,
+			rotation: `0 ${direction == 'Front' ? 180 : ''}${direction == 'Back' ? 0 : ''}${
+				direction == 'Left' ? 270 : ''
+			}${direction == 'Right' ? 90 : ''} 0`,
 			position: '0 1.75 0'
 		});
 
 		const triangle = createAframeEntity('a-triangle', {
+			color: `${direction == 'Back' ? 'blue' : ''}${direction == 'Front' ? 'red' : ''}`,
 			scale: '0.5 0.3 1',
 			rotation: '-90 0 0',
 			position: '0 0 -0.8'

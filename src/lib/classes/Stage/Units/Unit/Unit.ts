@@ -10,13 +10,17 @@ import { createAframeEntity } from '$lib/createAframeEntity';
 import { lifeBar, updateLifeBar } from './lifeBar';
 import { triangles } from './triangles';
 import type { Tile } from '../../Tiles/Tile/Tile';
-import type { path } from '../../../Pathfinder/Pathfinder';
+import type { path, step } from '../../../Pathfinder/Pathfinder';
 import { STAGE } from '../../Stage';
 import { Vector3 } from 'three';
 import type { Equipment } from '../../../Equipment/Equipment';
 import { buildEntity } from './buildEntity';
 import { TURN } from '../../../Turn/Turn';
 import { inTurnIndicator } from './inTurnIndicator';
+import type { Ambush } from '../../Ambushes/Ambush/Ambush';
+import { ATTACK, unitStatus } from '$lib/classes/Attack/Attack';
+import type { attackResult } from '$lib/classes/Attack/Attack';
+import { attackTarget } from '$lib/classes/Attack/attackTarget';
 export type unitState = 'idle' | 'target' | 'focused' | 'directing' | 'inTurn';
 export class Unit {
 	id: number;
@@ -103,19 +107,21 @@ export class Unit {
 	get vector3(): Vector3 {
 		return new Vector3(this.x, 0, this.z);
 	}
-	get parry(): [Equipment | null, number] {
-		if (this.currentTaskPoint < systemConfig.taskPointParry) return [null, 0];
-		if (!this.actor) return [null, 0];
+	get parry(): Array<{ equipment: Equipment; level: number }> {
+		if (this.currentTaskPoint < systemConfig.taskPointParry) return [];
+		if (!this.actor) return [];
 
 		const equipment = this.actor.equipments[0];
 		return [
-			equipment,
-			Math.max(
-				this.getLv(equipment.skillToUse) / 2,
-				this.getLv(equipment.skillToUse) / 2,
-				(this.getLv('Fencing') * 2) / 3,
-				(this.getLv('Quarterstaff') * 2) / 3
-			)
+			{
+				equipment,
+				level: Math.max(
+					this.getLv(equipment.skillToUse) / 2,
+					this.getLv(equipment.skillToUse) / 2,
+					(this.getLv('Fencing') * 2) / 3,
+					(this.getLv('Quarterstaff') * 2) / 3
+				)
+			}
 		];
 	}
 	get directionVector(): Vector3 {
@@ -200,10 +206,47 @@ export class Unit {
 	}
 
 	async moveToTile(path: path): Promise<void> {
-		if (!path) {
-			alert('undefined path');
-			return;
+		if (!path) throw new Error('undefined path');
+		const stepsToBeAmbushed: Array<{
+			step: step;
+			ambush: Ambush;
+		}> = [];
+		for (let i = 0; i < path.steps.length; i++) {
+			let step = path.steps[i];
+			STAGE.ambushes
+				.filter((ambush) => ambush.state == 'confirmed')
+				.forEach((ambush: Ambush) => {
+					//check if attacker still has the taskpoints more than the attack cost of the weapon
+					if (!ambush.attacker || !ambush.weapon) throw new Error('undefined attacker');
+					if (ambush.attacker.currentTaskPoint < ambush.weapon.attackCost) return;
+					if (!this.tile) throw new Error('undefined tile');
+					if (ambush.ifTileInRader(this.tile)) return;
+					console.log({ ambush });
+					const tile = STAGE.tiles.find((tile) => tile.id == step.tileId);
+					if (!ambush.ifTileInRader(tile)) return;
+					this.position = step.endPosition;
+					this.tile = STAGE.tiles.find((tile) => step.tileId == tile.id);
+					const attackResult = ambush.attackTarget(this);
+					step.ambushes.push({
+						ambush,
+						attackResult
+					});
+					console.log({ attackResult });
+				});
+			if (
+				step.ambushes.length > 0 &&
+				step.ambushes.some(
+					(ambushInstance: { ambush: Ambush; attackResult: attackResult }) =>
+						ambushInstance.attackResult.givenState.includes('dead') ||
+						ambushInstance.attackResult.givenState.includes('down')
+				)
+			) {
+				path.steps = path.steps.slice(0, i + 1);
+				break;
+			}
 		}
+		console.log({ steps: path.steps });
+
 		this.position = path.position;
 
 		await moveToTile(path, this.el);
@@ -214,10 +257,12 @@ export class Unit {
 		this.consumeTaskPoint(consumingTaskPoint);
 		this.consumedMovementPoint += path.consumedPoints;
 	}
+
 	turnToDirection(yRotation: number, direction: direction): Promise<boolean> {
+		console.log(yRotation, direction);
 		return new Promise((resolve) => {
 			this.direction = turnToDirection(yRotation, direction, this.el);
-
+			console.log('end direction', this.direction);
 			setTimeout(() => {
 				return resolve(true);
 			}, systemConfig.moveAnimationSeconds);

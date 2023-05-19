@@ -1,10 +1,19 @@
+import { addressAttackResult } from '$lib/classes/Attack/addressAttackResult';
+import type { path, step } from '$lib/classes/Pathfinder/Pathfinder';
 import { systemConfig } from '$lib/systemConfig';
-import type { path, step } from '$lib/types/path';
 import type { Entity } from 'aframe';
 
 export const moveToTile = async (path: path, unitEl: Entity) => {
 	const animationCount = path.steps.length;
 	path.steps.forEach((step: step, i) => {
+		//address the result of the ambush attacks if there's any
+		step.ambushes.forEach((ambushInstance) => {
+			const attackResult = ambushInstance.attackResult;
+			setTimeout(() => {
+				ambushInstance.ambush.addressAttackResult(attackResult);
+			}, systemConfig.moveAnimationSeconds * i + 1);
+		});
+
 		let property, from, to;
 		switch (step.movement) {
 			case 'MF':

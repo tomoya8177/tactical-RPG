@@ -1,21 +1,17 @@
-function probability(num) {
+function probability(num: number) {
 	let count = 0;
-	for (let i = 1; i <= 6; i++) {
-		for (let j = 1; j <= 6; j++) {
-			for (let k = 1; k <= 6; k++) {
-				if (i + j + k <= num) {
+	for (let i = 1; i <= 60; i++) {
+		for (let j = 1; j <= 60; j++) {
+			for (let k = 1; k <= 60; k++) {
+				if (i + j + k <= num * 10) {
 					count++;
 				}
 			}
 		}
 	}
-	return count / 216;
+	return count / 216000;
 }
-export const possibilityTable = {};
-for (let i = 3; i <= 18; i++) {
-	possibilityTable[i] = probability(i);
-}
-console.log(possibilityTable);
+
 export const possibility = (number: number) => {
-	return possibilityTable[Math.floor(number)];
+	return probability(number);
 };

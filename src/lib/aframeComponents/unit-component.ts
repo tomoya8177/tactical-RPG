@@ -12,7 +12,7 @@ declare module 'aframe' {
 	}
 }
 AFRAME.registerComponent('unit-component', {
-	unit: null as Unit | null,
+	unit: {} as Unit,
 	schema: {
 		tiles: { type: 'array', default: [] }
 	},
@@ -25,7 +25,6 @@ AFRAME.registerComponent('unit-component', {
 			switch (this.unit.state) {
 				case 'idle':
 				case 'inTurn':
-					console.log('stage state', STAGE.state);
 					if (STAGE.state == 'attack') return;
 					STAGE.changeState('idle');
 					if (this.unit.id != TURN.unit?.id) {
@@ -46,8 +45,6 @@ AFRAME.registerComponent('unit-component', {
 				}
 				case 'directing':
 					{
-						console.log(event.target);
-						console.log('triangle clicked', this.el);
 						if (!event.target) break;
 						const yRotation = this.el.getAttribute('rotation').y;
 						const target = event.target as Entity;

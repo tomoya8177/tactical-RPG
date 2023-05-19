@@ -8,7 +8,7 @@ import { createAframeEntity } from '$lib/createAframeEntity';
 import { systemConfig } from '$lib/systemConfig';
 import { appendRangeCurveToScene } from './appendRangeCurveToScene';
 import { STAGE } from '$lib/classes/Stage/Stage';
-import { possibility, possibilityTable } from '$lib/presets/rollPossibility';
+import { possibility } from '$lib/presets/rollPossibility';
 import { noticePossibility } from '../noticePossibility';
 import { getDamage } from '../getDamage';
 type rangeSimulationResult = {
@@ -22,8 +22,8 @@ type simulationResult = {
 	notice: number;
 	dodge: number;
 	parry: Array<{
-		weapon: Equipment;
-		possibility: number;
+		equipment: Equipment;
+		level: number;
 	}>;
 	damage: number;
 };
@@ -63,17 +63,13 @@ export class Simulation {
 			}
 			const hit = possibility(this.attacker.getLv(this.weapon.skillToUse));
 			const notice = noticePossibility(this.attacker, this.foe);
+
 			this.result = {
 				result: 'success',
 				hit,
 				notice,
 				dodge: possibility(this.foe.dodge),
-				parry: [
-					{
-						weapon: this.foe.parry[0],
-						possibility: possibility(this.foe.parry[1])
-					}
-				],
+				parry: this.foe.parry,
 				damage: getDamage(this.attacker, this.foe, this.weapon)
 			};
 			console.log(this.result, this.attacker.getLv(this.weapon.skillToUse), this.weapon.skillToUse);

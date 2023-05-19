@@ -4,6 +4,7 @@
 	import { uiController } from '$lib/stores/uiControllerStore';
 	import { FogExp2 } from 'three';
 	import WeaponTag from '../Atoms/WeaponTag.svelte';
+	import { possibility } from '$lib/presets/rollPossibility';
 
 	const onOKClicked = () => {
 		ATTACK.execute();
@@ -46,11 +47,15 @@
 			</div>
 			<div>
 				parry:
+
 				{#each result.parry as parry}
-					{parry.weapon.name}
-					{parry.weapon.skillToUse} ( Lv: {ATTACK.foe.getLv(parry.weapon.skillToUse)} /
-					{Math.round(parry.possibility * result.notice * 100)}% ),
+					<WeaponTag weapon={parry.equipment} level={parry.level} />
+					/
+					{Math.round(possibility(parry.level) * 100)}%,
 				{/each}
+				{#if result.parry.length === 0}
+					---
+				{/if}
 			</div>
 			<div>
 				{showDecimal(ATTACK.foe.currentTaskPoint, 2)} / 3

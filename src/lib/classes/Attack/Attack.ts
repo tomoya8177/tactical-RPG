@@ -8,11 +8,13 @@ import { STAGE } from '../Stage/Stage';
 import { attackTarget } from './attackTarget';
 import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import { Simulation } from './Simulation/Simulation';
+import { addressAttackResult } from './addressAttackResult';
 export const ticksPerSecond = 60;
-
+export const unitStatus = ['dead', 'down', 'bleeding', 'burning', 'stunned', 'blinded'];
 export interface attackResult {
 	result: string;
 	foeIsDead: boolean;
+	givenState: Array<typeof unitStatus>;
 	damage: number;
 }
 
@@ -34,12 +36,12 @@ class Attack {
 		this.simulationResult = null;
 		this.result = null;
 	}
-	init(attacker: Unit | null = null, tile: Tile | null = null): void {
+	init(attacker: Unit | null = null): void {
 		if (!TURN.unit) return;
 		if (!attacker) attacker = TURN.unit;
-		if (!tile) tile = STAGE.tiles.findByXZ(attacker.x, attacker.z)[0];
+		//if (!tile) tile = STAGE.tiles.findByXZ(attacker.x, attacker.z)[0];
 		this.attacker = attacker;
-		this.attacker.tile = tile;
+		//this.attacker.tile = tile;
 		STAGE.changeState('selectingWeapon');
 		//		this.changeState('selectingWeapon');
 	}
@@ -80,7 +82,7 @@ class Attack {
 				break;
 			case 'finished':
 				if (!this.attacker) throw new Error('attacker is null');
-				STAGE.focusOnUnit(this.attacker);
+				//STAGE.focusOnUnit(this.attacker);
 				this.attacker = null;
 				this.weapon = null;
 				this.foe = null;
@@ -89,13 +91,13 @@ class Attack {
 		}
 		this.state = state;
 	}
-	setWeapon(weapon: Equipment): void {
+	async setWeapon(weapon: Equipment): Promise<void> {
 		this.weapon = weapon;
-		this.changeState('selectingTarget');
+		await this.changeState('selectingTarget');
 	}
-	setFoe(foe: Unit): void {
+	async setFoe(foe: Unit): Promise<void> {
 		this.foe = foe;
-		this.changeState('simulating');
+		await this.changeState('simulating');
 		STAGE.units.forEach((unit) => {
 			unit.changeState('idle');
 		});
@@ -103,24 +105,16 @@ class Attack {
 	execute(): void {
 		if (!this.attacker || !this.foe || !this.weapon) return;
 		this.changeState('executing');
+		this.attackTarget();
+		this.changeState('finished');
+	}
+	attackTarget(): attackResult {
+		if (!this.attacker || !this.foe || !this.weapon) throw new Error('attacker is null');
 		const result: attackResult = attackTarget(this.attacker, this.foe, this.weapon);
 		console.log({ result });
-		this.attacker.consumeTaskPoint(this.weapon.attackCost);
-		switch (result.result) {
-			case 'miss':
-				break;
-			case 'dodge':
-				this.foe.consumeTaskPoint(0.3);
-				break;
-			case 'parry':
-				this.foe.consumeTaskPoint(0.75);
-				break;
-		}
-		if (result.foeIsDead) {
-			this.foe.remove();
-			STAGE.units.remove(this.foe);
-		}
-		this.changeState('finished');
+		addressAttackResult(this.attacker, this.foe, this.weapon, result);
+
+		return result;
 	}
 }
 export const ATTACK = new Attack();

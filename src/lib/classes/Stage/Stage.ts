@@ -117,7 +117,12 @@ class Stage {
 		}
 		this.paths.forEach((path) => {
 			const tile = this.tiles.find((tile) => tile.id == path.tileId);
-			tile?.changeState('destination');
+			const inAmbushRader = STAGE.ambushes.ifTileInSomeRader(tile).length > 0;
+			if (inAmbushRader) {
+				tile.changeState('destinationInDanger');
+			} else {
+				tile.changeState('destination');
+			}
 		});
 		return this.paths;
 	}

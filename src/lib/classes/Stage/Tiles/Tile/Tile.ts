@@ -7,7 +7,7 @@ import type { Entity } from 'aframe';
 import { createAframeEntity } from '$lib/createAframeEntity';
 import { buildEntity } from './buildEntity';
 import { STAGE } from '../../Stage';
-type state = 'idle' | 'focus' | 'destination' | 'target';
+type state = 'idle' | 'focus' | 'destination' | 'destinationInDanger' | 'target';
 export type tileMaterial =
 	| 'dirt'
 	| 'grass'
@@ -47,6 +47,9 @@ export class Tile {
 				break;
 			case 'destination':
 				this.el.querySelector('a-plane')?.setAttribute('color', 'green');
+				break;
+			case 'destinationInDanger':
+				this.el.querySelector('a-plane')?.setAttribute('color', 'pink');
 				break;
 			case 'target':
 				this.el.querySelector('a-plane')?.setAttribute('color', 'red');

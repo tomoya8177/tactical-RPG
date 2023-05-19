@@ -1,4 +1,7 @@
+import { TURN } from '$lib/classes/Turn/Turn';
+import type { Tile } from '../Tiles/Tile/Tile';
 import type { Unit } from '../Units/Unit/Unit';
+import type { Ambush } from './Ambush/Ambush';
 
 export class Ambushes extends Array {
 	of(unit: Unit) {
@@ -11,5 +14,18 @@ export class Ambushes extends Array {
 				this.splice(this.indexOf(ambush), 1);
 			}
 		});
+	}
+	ifTileInSomeRader(tile: Tile): Ambush[] {
+		const ambushes: Ambush[] = [];
+		this.forEach((ambush) => {
+			const ambushIsActive = ambush.state == 'confirmed';
+			if (!ambushIsActive) return;
+			const ambushIsMine = ambush.attacker.id == TURN.unit.id;
+			const iAmInTheRaderAlready = ambush.ifTileInRader(TURN.unit.tile);
+			if (!ambushIsMine && !iAmInTheRaderAlready && ambush.ifTileInRader(tile)) {
+				ambushes.push(ambush);
+			}
+		});
+		return ambushes;
 	}
 }

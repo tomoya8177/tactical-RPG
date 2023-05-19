@@ -1,18 +1,19 @@
 import { systemConfig } from '$lib/systemConfig';
 import type { direction } from '$lib/types/direction';
 import type { Entity } from 'aframe';
-const toY = (direction: direction, yRotation: number) => {
+export type relativeDirection = 'Front' | 'Back' | 'Left' | 'Right';
+const toY = (direction: relativeDirection, yRotation: number) => {
 	switch (direction) {
-		case 'S':
+		case 'Front':
 			return yRotation;
 
-		case 'N':
+		case 'Back':
 			return yRotation + 180;
 
-		case 'W':
+		case 'Left':
 			return yRotation + 90;
 
-		case 'E':
+		case 'Right':
 			return yRotation - 90;
 	}
 };
