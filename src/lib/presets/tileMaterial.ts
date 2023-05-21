@@ -9,6 +9,9 @@ export type tileMaterialSlug =
 	| 'water'
 	| 'underwaterSandShallow'
 	| 'underwaterSandDeep'
+	| 'coralReef'
+	| 'underwaterRock'
+	| 'anemone'
 	| 'air';
 export type tileMaterial = {
 	slug: tileMaterialSlug;
@@ -18,6 +21,7 @@ export type tileMaterial = {
 	swimmable: boolean;
 	hoverable: boolean;
 	skiiable: boolean;
+	isUnderwater: boolean;
 	ST: number;
 	DX: number;
 	move: number;
@@ -31,6 +35,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: false,
 		ST: 0,
 		DX: 0,
 		move: 0
@@ -43,6 +48,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: true,
+		isUnderwater: false,
 		ST: 0,
 		DX: 0,
 		move: 0 //because this is for jetski
@@ -55,6 +61,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: false,
 		ST: -2,
 		DX: -1,
 		move: -1
@@ -67,6 +74,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: false,
 		ST: 0,
 		DX: 0,
 		move: 0
@@ -79,6 +87,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: false,
 		ST: 0,
 		DX: 0,
 		move: 0
@@ -91,6 +100,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: false,
 		ST: 0,
 		DX: 0,
 		move: 0
@@ -103,6 +113,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: false,
 		ST: 0,
 		DX: -1,
 		move: -2
@@ -115,6 +126,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: true,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: true,
 		ST: -2,
 		DX: -1,
 		move: 0 //because it is swimming
@@ -127,6 +139,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: true,
 		ST: 0,
 		DX: -1,
 		move: -3
@@ -139,6 +152,7 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: false,
 		skiiable: false,
+		isUnderwater: true,
 		ST: -1,
 		DX: -2,
 		move: -4
@@ -151,8 +165,49 @@ export const tileMaterials: tileMaterial[] = [
 		swimmable: false,
 		hoverable: true,
 		skiiable: false,
+		isUnderwater: false,
 		ST: 0,
 		DX: 0,
 		move: 0 //because it is flying
+	},
+	{
+		slug: 'coralReef',
+		name: 'Coral Reef',
+		color: '#ff0000',
+		walkable: false,
+		swimmable: false,
+		hoverable: false,
+		skiiable: false,
+		isUnderwater: true,
+		ST: 0,
+		DX: 0,
+		move: 0
+	},
+	{
+		slug: 'underwaterRock',
+		name: 'Underwater Rock',
+		color: '#a0a0a0',
+		walkable: false,
+		swimmable: false,
+
+		hoverable: false,
+		skiiable: false,
+		isUnderwater: true,
+		ST: 0,
+		DX: 0,
+		move: 0
+	},
+	{
+		slug: 'anemone',
+		name: 'Anemone',
+		color: '#ff00ff',
+		walkable: false,
+		swimmable: false,
+		hoverable: false,
+		skiiable: false,
+		isUnderwater: true,
+		ST: 0,
+		DX: 0,
+		move: 0
 	}
 ];

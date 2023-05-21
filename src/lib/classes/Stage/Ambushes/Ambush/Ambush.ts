@@ -68,7 +68,7 @@ export class Ambush {
 		if (!this.ifTileInRader(tile)) return false;
 		if (!this.attacker) return false;
 		if (!this.weapon) return false;
-		if (this.attacker.currentTaskPoint < this.weapon.attackCost) return false;
+		if (this.attacker.TP.current < this.weapon.attackCost) return false;
 		return true;
 	}
 }

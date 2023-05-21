@@ -9,15 +9,15 @@ import { lifeBar, updateLifeBar } from './lifeBar';
 import { triangles } from './triangles';
 import type { Tile } from '../../Tiles/Tile/Tile';
 import { Vector3 } from 'three';
-import type { Equipment } from '../../../Equipment/Equipment';
 import { buildEntity } from './buildEntity';
 import { TURN } from '../../../Turn/Turn';
 import { inTurnIndicator } from './inTurnIndicator';
 import { roll3d6 } from '$lib/Maths/dice3d6';
-import type { unitStatusSlugs, unitStatusType } from '$lib/types/unitStatus';
-import { getUnitStatusObejct } from '$lib/presets/unitStatus';
+import type { unitStatusSlugs } from '$lib/types/unitStatus';
 import { Navigation } from './Navigation/Navigation';
-import type { parryInstance } from '$lib/types/parryInstance';
+import { Prompt } from './Prompt/Prompt';
+import { WT } from './WT/WT';
+import { TP } from './TP/TP';
 export type unitState = 'idle' | 'target' | 'focused' | 'directing' | 'inTurn';
 export class Unit {
 	id: number;
@@ -27,10 +27,9 @@ export class Unit {
 	tile: Tile;
 	position: xyz;
 	direction: direction;
-	currentWaitTurn: number;
-	taskPoint: number;
-	currentTaskPoint: number;
-	consumedMovementPoint: number;
+	team: number = 0;
+	WT: WT;
+	TP: TP;
 	navigation: Navigation;
 	lifeBars: {
 		main: Entity | null;
@@ -41,9 +40,10 @@ export class Unit {
 		life: null,
 		grey: null
 	};
+	prompt: Prompt;
 
 	el: Entity;
-	constructor(id: number, type: 'actor' | null = null, actor: Actor, tile: Tile) {
+	constructor(id: number, team: number, type: 'actor' | null = null, actor: Actor, tile: Tile) {
 		this.id = id;
 		this.state = 'idle';
 		this.type = type == null ? 'actor' : type;
@@ -52,38 +52,26 @@ export class Unit {
 		this.tile = tile;
 		this.position = tile.position;
 		this.direction = type == null ? 'S' : 'S';
-		this.currentWaitTurn = this.waitTurn;
-		this.taskPoint = systemConfig.defaultTaskPoint;
-		this.currentTaskPoint = systemConfig.defaultTaskPoint;
-		this.consumedMovementPoint = 0;
+		this.team = team;
+		this.WT = new WT(this);
+		this.TP = new TP(this);
 		this.navigation = new Navigation(this);
+		this.prompt = new Prompt(this);
 		this.el = buildEntity(this);
 		this.lifeBars = {
 			main: null,
 			life: null,
 			grey: null
 		};
-		[this.lifeBars.main, this.lifeBars.life, this.lifeBars.grey] = lifeBar();
+		[this.lifeBars.main, this.lifeBars.life, this.lifeBars.grey] = lifeBar(this);
 		this.el.appendChild(this.lifeBars.main);
 
 		const scene = document.querySelector('a-scene');
 		scene?.appendChild(this.el);
 	}
 
-	get speed(): number {
-		if (!this.actor) return 0;
-		// if actor's HT - damage is less than 3, then your speed is half.
-		let movement =
-			(this.actor.DX + this.actor.HT - this.actor.damage / 3) / 2 -
-			(this.actor.equipments.totalWeight - 10) / this.actor.ST;
-		return Math.max(0, movement);
-	}
-
-	get movement(): number {
-		return this.speed - this.consumedMovementPoint;
-	}
 	get dodge(): number {
-		if (this.currentTaskPoint < systemConfig.taskPointDodge) return 0;
+		if (this.TP.current < systemConfig.taskPointDodge) return 0;
 		if (!this.actor) return 0;
 
 		return Math.max((this.DX + this.HT) / 4, this.DX / 2);
@@ -98,10 +86,10 @@ export class Unit {
 		return this.position.z;
 	}
 	get ST(): number {
-		return this.actor.ST + this.tile?.material.ST;
+		return this.actor.ST + this.tile.material.ST;
 	}
 	get DX(): number {
-		return this.actor.DX + this.tile?.material.DX;
+		return this.actor.DX + this.tile.material.DX;
 	}
 	get HT(): number {
 		return this.actor.HT;
@@ -130,30 +118,9 @@ export class Unit {
 		this.actor.damage += damage;
 		//	this.updateLifeBar();
 	}
-	promptMessage(message: string): void {
-		const resultText = createAframeEntity('a-text', {
-			'look-at-camera': '',
-			position: '0 2.2 0',
-			align: 'center',
-			value: message,
-			font: systemConfig.popUpFont
-		});
-		this.el.appendChild(resultText);
-		setTimeout(() => {
-			this.el.removeChild(resultText);
-		}, 2000);
-	}
-	promptResult(message: string): void {
-		this.promptMessage(message);
-	}
-	promptDamage(damage: number): void {
-		this.promptMessage((showDecimal(damage, 1) * 10).toString());
-	}
+
 	updateLifeBar(): void {
 		updateLifeBar(this);
-	}
-	get waitTurn(): number {
-		return (this.actor.equipments.totalWeight + 100) / (this.actor.DX + this.actor.IQ);
 	}
 	getLv(skillName: string): number {
 		const skill = this.actor?.skills.find((skill) => skill.name == skillName);
@@ -196,36 +163,6 @@ export class Unit {
 		this.state = state;
 	}
 
-	consumeTaskPoint(value: number) {
-		this.currentTaskPoint -= value;
-	}
-	resetTaskPoint() {
-		this.currentTaskPoint = this.taskPoint;
-	}
-	hasStatus(statusSlug: unitStatusSlugs): boolean {
-		return this.actor.statuses.some((status) => status.slug == statusSlug);
-	}
-	isUnconscious(): boolean {
-		return this.actor.statuses.some((status) => status.slug == 'unconscious');
-	}
-	isDown(): boolean {
-		return this.actor.statuses.some((status) => status.slug == 'down');
-	}
-	consumeWaitTurn(waitTurnToConsume: number): void {
-		if (this.actor.statuses.has('bleeding')) {
-			this.actor.damage += 0.2 * waitTurnToConsume;
-			this.updateLifeBar();
-		}
-		if (this.isUnconscious()) return;
-		this.currentWaitTurn = this.currentWaitTurn - waitTurnToConsume;
-		console.log(this.actor?.name, ' his current wait turn is ', this.currentWaitTurn);
-		if (this.currentWaitTurn < this.waitTurn / 2) {
-			this.actor.statuses.remove('down');
-		}
-	}
-	resetWaitTurn(): void {
-		this.currentWaitTurn = this.waitTurn;
-	}
 	get life(): number {
 		if (!this.actor) return 0;
 		return this.actor.HT * 3 - this.actor.damage;

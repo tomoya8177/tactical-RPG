@@ -11,7 +11,7 @@ export const addressAttackResult = (
 	result: attackResult
 ): void => {
 	let promptMessage = '';
-	if (!foe.isUnconscious()) {
+	if (!foe.actor.statuses.has('unconscious')) {
 		const tobeUnconscious = foe.checkUnconscious();
 		if (tobeUnconscious) {
 			result.givenState.push(getUnitStatusObejct('unconscious'));
@@ -24,7 +24,7 @@ export const addressAttackResult = (
 		foe.actor.statuses.push(status);
 		promptMessage += ' +' + status.name;
 		if (status.slug == 'down') {
-			foe.currentWaitTurn += foe.waitTurn / 2;
+			foe.WT.current += foe.WT.get() / 2;
 		}
 	});
 	if (result.damage) {
@@ -32,17 +32,17 @@ export const addressAttackResult = (
 		promptMessage = Math.round(result.damage * 10) + promptMessage;
 	}
 
-	foe.promptResult(promptMessage);
+	foe.prompt.message(promptMessage);
 
-	attacker.consumeTaskPoint(weapon.attackCost);
+	attacker.TP.consume(weapon.attackCost);
 	switch (result.result) {
 		case 'miss':
 			break;
 		case 'dodge':
-			foe.consumeTaskPoint(0.3);
+			foe.TP.consume(0.3);
 			break;
 		case 'parry':
-			foe.consumeTaskPoint(0.75);
+			foe.TP.consume(0.75);
 			break;
 	}
 	if (result.foeIsDead) {

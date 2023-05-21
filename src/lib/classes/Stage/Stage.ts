@@ -81,6 +81,9 @@ class Stage {
 				break;
 			case 'ambush':
 				uiController.show('ambushConfirmationMenu');
+				break;
+			case 'attack':
+				break;
 		}
 		this.state = state;
 	}
@@ -98,8 +101,14 @@ class Stage {
 				return tile;
 			})
 		);
-		if (!unit.position || !unit.direction || unit.currentTaskPoint < 2) return [];
-		this.paths = PATHFINDER.findPath(unit.position, unit.direction, unit.movement, 0, []);
+		if (!unit.position || !unit.direction || unit.TP.current < 2) return [];
+		this.paths = PATHFINDER.findPath(
+			unit.position,
+			unit.direction,
+			unit.navigation.movement,
+			0,
+			[]
+		);
 		//add a path where you don't make any move
 		if (unit.tile) {
 			this.paths.push({

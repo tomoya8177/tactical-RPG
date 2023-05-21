@@ -2,9 +2,9 @@
 	import { showDecimal } from '$lib/Maths/showDecimal';
 	import { STAGE } from '$lib/classes/Stage/Stage';
 	import { TURN } from '$lib/classes/Turn/Turn';
-	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import { fade } from 'svelte/transition';
 	import Life from '../Atoms/Life.svelte';
+	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	export let unit: Unit;
 </script>
 
@@ -18,6 +18,7 @@
 		<div style="flex:auto">
 			Name:
 			{unit.actor.name}
+			{unit.team}
 		</div>
 	</div>
 	<div style="display:flex;gap:1rem">
@@ -42,16 +43,16 @@
 
 		<div style="flex:auto">
 			Speed:
-			{unit.speed.toFixed(1)}
+			{unit.navigation.speed.toFixed(1)}
 		</div>
 		<div>
 			WT:
 			{#if unit.id == TURN.unit?.id}
 				0
 			{:else}
-				{Math.round(showDecimal(unit.currentWaitTurn, 2) * 100)}
+				{Math.round(showDecimal(unit.WT.current, 2) * 100)}
 			{/if}
-			/ {Math.round(showDecimal(unit.waitTurn, 2) * 100)}
+			/ {Math.round(showDecimal(unit.WT.get(), 2) * 100)}
 		</div>
 	</div>
 	<div style="display:flex;gap:1rem">
@@ -61,11 +62,11 @@
 		</div>
 		<div style="flex:initial">
 			Task Point:
-			{showDecimal(unit.currentTaskPoint, 2)}
+			{showDecimal(unit.TP.current, 2)}
 		</div>
 		<div style="flex:initial">
 			Movement:
-			{showDecimal(unit.movement, 1)}
+			{showDecimal(unit.navigation.movement, 1)}
 		</div>
 	</div>
 	<div style="display:flex;gap:1rem">

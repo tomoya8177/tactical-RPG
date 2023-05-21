@@ -1,5 +1,7 @@
+const baseAnimationSpeed = 1000;
 export const systemConfig = {
-	moveAnimationSeconds: 300,
+	moveAnimationSeconds: baseAnimationSpeed * 0.3,
+
 	defaultTaskPoint: 3,
 	taskPointParry: 0.75,
 	taskPointDodge: 0.3,

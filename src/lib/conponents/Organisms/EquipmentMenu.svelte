@@ -64,7 +64,7 @@
 		});
 		unit.actor.equipments.removeUnequipped();
 		//unit.actor.equipments = [...equipments];
-		unit.consumeTaskPoint(0.5);
+		unit.TP.consume(0.5);
 		STAGE.changeState('idle');
 		//		cancelButtonController();
 	};

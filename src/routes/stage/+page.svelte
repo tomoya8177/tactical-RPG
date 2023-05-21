@@ -29,7 +29,9 @@
 				let actor: Actor = new Actor();
 				console.log({ actor });
 				let initialTile = STAGE.tiles.getRandomWalkableTile();
-				let unit = new Unit(i, 'actor', actor, initialTile);
+				const team = i % 2;
+				let unit = new Unit(i, team, 'actor', actor, initialTile);
+				unit.updateLifeBar();
 				//add([unit]);
 				STAGE.units.push(unit);
 			}

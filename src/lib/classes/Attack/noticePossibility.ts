@@ -3,7 +3,7 @@ import type { Unit } from '../Stage/Units/Unit/Unit';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
 
 export const noticePossibility = (attacker: Unit, foe: Unit) => {
-	if (foe.isUnconscious()) return 0;
+	if (foe.actor.statuses.has('unconscious')) return 0;
 	let v1;
 	switch (foe.direction) {
 		case 'S':

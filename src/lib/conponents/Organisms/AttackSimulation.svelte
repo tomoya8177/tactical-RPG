@@ -63,7 +63,7 @@
 				{/if}
 			</div>
 			<div>
-				{showDecimal(ATTACK.foe.currentTaskPoint, 2)} / 3
+				{showDecimal(ATTACK.foe.TP.current, 2)} / 3
 			</div>
 		</div>
 	{/if}

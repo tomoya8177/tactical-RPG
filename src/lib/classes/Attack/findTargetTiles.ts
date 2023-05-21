@@ -5,6 +5,7 @@ import type { Unit } from '../Stage/Units/Unit/Unit';
 import type { Entity } from 'aframe';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
 import { tileInFront } from './tileInFront';
+import { attackTarget } from './attackTarget';
 
 export const findTargetTiles = (unit: Unit, weapon: Equipment, tiles: Tile[]): Array<Tile> => {
 	if (!unit.position) return [];
@@ -20,6 +21,9 @@ export const findTargetTiles = (unit: Unit, weapon: Equipment, tiles: Tile[]): A
 	}
 	tilesInRange = tilesInRange.filter((tile) => {
 		return tileInFront(unit, tile) && tile.type == 'walkable';
+	});
+	tilesInRange = tilesInRange.filter((tile) => {
+		return tile.id != unit.tile.id;
 	});
 	return tilesInRange;
 };

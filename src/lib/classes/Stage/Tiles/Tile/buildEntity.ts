@@ -29,6 +29,7 @@ export const buildEntity = (tile: Tile): Entity => {
 			width: 1,
 			height: tile.y + 5,
 			depth: 1,
+			color: `${tile.material.color}`,
 			position: `0 ${(tile.y / 2 + 2.5) * -1 - 0.01} 0`
 		});
 		box.classList.add('ground');

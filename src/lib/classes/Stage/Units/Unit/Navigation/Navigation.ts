@@ -6,13 +6,15 @@ import { systemConfig } from '$lib/systemConfig';
 import type { attackResult } from '$lib/types/attackResult';
 import type { direction } from '$lib/types/direction';
 import type { Unit } from '../Unit';
-import { moveToTile } from '../moveToTile';
-import { turnToDirection } from '../turnToDirection';
+import { moveToTile } from './moveToTile';
+import { turnToDirection } from './turnToDirection';
 
 export class Navigation {
 	unit: Unit;
+	consumedMovementPoint: number;
 	constructor(unit: Unit) {
 		this.unit = unit;
+		this.consumedMovementPoint = 0;
 	}
 	async moveToTile(path: path): Promise<void> {
 		if (!path || !this.unit.tile) throw new Error('undefined path');
@@ -26,15 +28,14 @@ export class Navigation {
 			console.log({ step });
 			this.unit.position = step.endPosition;
 			this.unit.direction = rotation2Direction(step.endYRotation);
-			this.unit.tile = STAGE.tiles.find((tile) => step.tileId == tile.id);
 			STAGE.ambushes
 				.filter((ambush: Ambush) => {
 					if (!path || !this.unit.tile) throw new Error('undefined path');
 					return ambush.isActiveAndTileInRader(tile) && !ambush.ifTileInRader(this.unit.tile);
 				})
 				.forEach((ambush: Ambush) => {
-					console.log({ ambush });
-					//check if attacker still has the taskpoints more than the attack cost of the weapon
+					console.log('second time', { ambush });
+					this.unit.tile = STAGE.tiles.find((tile) => step.tileId == tile.id);
 					const attackResult = ambush.attackTarget(this.unit);
 					step.ambushes.push({
 						ambush,
@@ -64,9 +65,8 @@ export class Navigation {
 		this.unit.changeState('directing');
 		STAGE.changeState('selectingDirection');
 		this.unit.tile = STAGE.tiles.find((tile) => tile.id == path.tileId) || null;
-		const consumingTaskPoint = path.consumedPoints / this.unit.speed;
-		this.unit.consumeTaskPoint(consumingTaskPoint);
-		this.unit.consumedMovementPoint += path.consumedPoints;
+		this.unit.TP.consume(path.consumedPoints / this.speed);
+		this.consumedMovementPoint += path.consumedPoints;
 	}
 
 	turnToDirection(yRotation: number, direction: direction): Promise<boolean> {
@@ -78,5 +78,16 @@ export class Navigation {
 				return resolve(true);
 			}, systemConfig.moveAnimationSeconds);
 		});
+	}
+	get speed(): number {
+		// if actor's HT - damage is less than 3, then your speed is half.
+		let movement =
+			(this.unit.actor.DX + this.unit.actor.HT - this.unit.actor.damage / 3) / 2 -
+			(this.unit.actor.equipments.totalWeight - 10) / this.unit.actor.ST;
+		return Math.max(0, movement);
+	}
+
+	get movement(): number {
+		return this.speed - this.consumedMovementPoint;
 	}
 }

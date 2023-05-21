@@ -12,8 +12,8 @@ import { radians2degrees } from '$lib/Maths/radian2degrees';
 export interface step {
 	tileId: number | '';
 	movement: string;
-	startPosition: xyz | null;
-	endPosition: xyz | null;
+	startPosition: xyz;
+	endPosition: xyz;
 	startYRotation: number | null;
 	endYRotation: number | null;
 	ambushes: Array<{

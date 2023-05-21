@@ -11,7 +11,7 @@ class Turn {
 	async start(unit: Unit | null = null) {
 		if (!unit) unit = findNextUnit();
 		this.unit = unit;
-		this.unit.resetTaskPoint();
+		this.unit.TP.reset();
 		console.log('clearing');
 		STAGE.ambushes.clearFor(this.unit);
 		console.log('cleared');
@@ -25,10 +25,10 @@ class Turn {
 		STAGE.units.forEach((unit) => {
 			if (!this.unit) return;
 			if (this.unit.id == unit.id) return;
-			unit.consumeWaitTurn(this.unit?.currentWaitTurn);
+			unit.WT.consume(this.unit.WT.current);
 		});
-		this.unit.resetWaitTurn();
-		this.unit.consumedMovementPoint = 0;
+		this.unit.WT.reset();
+		this.unit.navigation.consumedMovementPoint = 0;
 
 		uiController.hide('actorData');
 		uiController.hide('actionMenu');

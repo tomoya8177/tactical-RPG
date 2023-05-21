@@ -39,7 +39,7 @@ export const attackTarget = (
 
 	const givenState: unitStatusType[] = [];
 	if (!checkIfAttackHits()) {
-		foe.promptResult('Miss');
+		foe.prompt.message('Miss');
 
 		return {
 			result: 'miss',
@@ -48,10 +48,10 @@ export const attackTarget = (
 			givenState: []
 		};
 	}
-	if (!foe.isUnconscious() && checkIfFoeNoticesAttack()) {
+	if (!foe.actor.statuses.has('unconscious') && checkIfFoeNoticesAttack()) {
 		console.log('noticed');
 		if (checkIfFoeCanDodge()) {
-			foe.promptResult('Dodge');
+			foe.prompt.message('Dodge');
 
 			return {
 				result: 'dodge',
@@ -62,7 +62,7 @@ export const attackTarget = (
 			};
 		}
 		if (checkIfFoeCanParry()) {
-			foe.promptResult('Parry');
+			foe.prompt.message('Parry');
 
 			return {
 				result: 'parry',

@@ -28,12 +28,19 @@ export const testStage = (x: number, z: number, y: number | null = null): Tile[]
 				position.y = checkYIsTooDifferent(position.y);
 			}
 			let material;
-			if (position.y < -0.5) {
+			if (position.y < -1) {
+				const underwaterTiles = tileMaterials.filter(
+					(material) => material.isUnderwater && material.slug != 'water'
+				);
+				material = underwaterTiles[Math.round(Math.random() * (underwaterTiles.length - 1))];
+			} else if (position.y < -0.5) {
 				material = tileMaterials.find((material) => material.slug == 'underwaterSandDeep');
 			} else if (position.y < 0) {
 				material = tileMaterials.find((material) => material.slug == 'underwaterSandShallow');
 			} else {
-				let walkableTiles = tileMaterials.filter((material) => material.walkable);
+				let walkableTiles = tileMaterials.filter(
+					(material) => material.walkable && !material.isUnderwater
+				);
 				material = walkableTiles[Math.round(Math.random() * (walkableTiles.length - 1))];
 			}
 			const tile = new Tile({

@@ -1,11 +1,12 @@
 import { createAframeEntity } from '$lib/createAframeEntity';
 import { drawRectangular } from '$lib/drawRectangular';
+import type { Entity } from 'aframe';
 import type { Unit } from './Unit';
 
 const height = 0.05;
 const width = 1;
 const duration = 500;
-export const lifeBar = () => {
+export const lifeBar = (unit: Unit) => {
 	const lifeBarGrey = createAframeEntity('a-plane', {
 		width: 0,
 		height: height,
@@ -26,6 +27,14 @@ export const lifeBar = () => {
 		scale: `${width} 1 1`
 	});
 	const lines = drawRectangular(width, height, '#666');
+	lines.classList.add('lines');
+	const bg = createAframeEntity('a-plane', {
+		width: width + 0.06,
+		height: height + 0.06,
+		color: unit.team == 0 ? 'red' : 'blue',
+		position: '0 0 -0.1'
+	});
+	lifeBar.appendChild(bg);
 	lifeBar.appendChild(lines);
 	lifeBar.appendChild(lifeBarGrey);
 	lifeBar.appendChild(lifeBarLife);
@@ -70,6 +79,7 @@ export const updateLifeBar = (unit: Unit) => {
 	let newColor = 'lightgreen';
 	if (unit.actor.statuses.has('down')) newColor = 'orange';
 	if (unit.actor.statuses.has('unconscious')) newColor = 'red';
+
 	setTimeout(() => {
 		console.log('updating color ', newColor);
 		unit.lifeBars.life?.setAttribute('color', newColor);

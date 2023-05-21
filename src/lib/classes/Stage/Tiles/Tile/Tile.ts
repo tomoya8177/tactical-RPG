@@ -8,6 +8,8 @@ import { createAframeEntity } from '$lib/createAframeEntity';
 import { buildEntity } from './buildEntity';
 import { STAGE } from '../../Stage';
 import type { tileMaterial } from '$lib/presets/tileMaterial';
+import { drawRectangular } from '$lib/drawRectangular';
+import { drawRectangularFrame } from '$lib/drawRectangularFrame';
 type state = 'idle' | 'focus' | 'destination' | 'destinationInDanger' | 'target';
 
 export class Tile {
@@ -29,20 +31,38 @@ export class Tile {
 	}
 	changeState(state: state) {
 		const reset = () => {
-			this.el.querySelector('a-plane')?.setAttribute('color', this.material.color);
+			this.el.querySelectorAll('.frame').forEach((frame) => {
+				this.el.removeChild(frame);
+			});
 		};
 		reset();
 		switch (state) {
 			case 'focus':
 				break;
 			case 'destination':
-				this.el.querySelector('a-plane')?.setAttribute('color', 'green');
+				{
+					const lines = drawRectangularFrame(1, 'green');
+					lines.setAttribute('rotation', '-90 0 0');
+					//lines.setAttribute('wireframe', 'true');
+					this.el.appendChild(lines);
+				}
+				//this.el.querySelector('a-plane')?.setAttribute('color', 'green');
 				break;
 			case 'destinationInDanger':
-				this.el.querySelector('a-plane')?.setAttribute('color', 'pink');
+				{
+					const lines = drawRectangularFrame(1, 'pink');
+					lines.setAttribute('rotation', '-90 0 0');
+					this.el.appendChild(lines);
+					//this.el.querySelector('a-plane')?.setAttribute('color', 'pink');
+				}
 				break;
 			case 'target':
-				this.el.querySelector('a-plane')?.setAttribute('color', 'red');
+				{
+					const lines = drawRectangularFrame(1, 'red');
+					lines.setAttribute('rotation', '-90 0 0');
+					this.el.appendChild(lines);
+					//this.el.querySelector('a-plane')?.setAttribute('color', 'red');
+				}
 				break;
 		}
 		this.state = state;

@@ -16,7 +16,7 @@
 		uiController.hide('chooseWeaponMenu');
 		if (STAGE.state == 'selectingWeapon') {
 			ATTACK.setWeapon(weapon);
-			STAGE.state = 'attack';
+			STAGE.changeState('attack');
 		}
 		if (STAGE.state == 'selectingWeaponForAmbush') {
 			if (!TURN.unit) return console.error('TURN.unit is null');
@@ -34,7 +34,7 @@
 	{#each unit?.actor?.equipments.filter((equipment) => equipment.equippedOn == 'rightHand' || equipment.equippedOn == 'leftHand') || [] as weapon, i}
 		<button
 			on:click={() => onWeaponClicked(weapon, i)}
-			disabled={unit?.currentTaskPoint - 0.7 < weapon.attackCost}
+			disabled={unit.TP.current - 0.7 < weapon.attackCost}
 		>
 			<WeaponTag {weapon} level={unit.getLv(weapon.skillToUse)} />
 		</button>

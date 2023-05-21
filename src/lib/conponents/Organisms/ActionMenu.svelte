@@ -57,13 +57,9 @@
 			>Move</button
 		>
 
-		<button on:click={onAttackClicked} disabled={unit.currentTaskPoint < 2 || onAmbush}
-			>Attack</button
-		>
-		<button on:click={onAmbushClicked} disabled={unit.currentTaskPoint < 2 || onAmbush}
-			>Ambush</button
-		>
-		<button on:click={onEquipmentClicked} disabled={unit.currentTaskPoint < 1.5 || onAmbush}
+		<button on:click={onAttackClicked} disabled={unit.TP.current < 2 || onAmbush}>Attack</button>
+		<button on:click={onAmbushClicked} disabled={unit.TP.current < 2 || onAmbush}>Ambush</button>
+		<button on:click={onEquipmentClicked} disabled={unit.TP.current < 1.5 || onAmbush}
 			>Equipment</button
 		>
 		<button on:click={onEndTurnClicked}>End Turn</button>
