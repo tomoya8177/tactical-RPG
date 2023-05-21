@@ -1,3 +1,4 @@
+import { tileMaterials } from '$lib/presets/tileMaterial';
 import { Tile } from './Tiles/Tile/Tile';
 export const testStage = (x: number, z: number, y: number | null = null): Tile[] => {
 	const checkYIsTooDifferent = (y) => {
@@ -19,17 +20,27 @@ export const testStage = (x: number, z: number, y: number | null = null): Tile[]
 			const position = {
 				x: i,
 				z: j,
-				y: Math.round(Math.random() * 15) * 0.25 - 1.4
+				y: Math.round(Math.random() * 15) * 0.25 - 1.5
 			};
+
 			if (i > 0 && j > 0) {
 				position.y = checkYIsTooDifferent(position.y);
+			}
+			let material;
+			if (position.y < -0.5) {
+				material = tileMaterials.find((material) => material.slug == 'underwaterSandDeep');
+			} else if (position.y < 0) {
+				material = tileMaterials.find((material) => material.slug == 'underwaterSandShallow');
+			} else {
+				let walkableTiles = tileMaterials.filter((material) => material.walkable);
+				material = walkableTiles[Math.round(Math.random() * (walkableTiles.length - 1))];
 			}
 			const tile = new Tile({
 				id: count,
 				position,
 				isGround: true,
-				type: position.y > 0 ? 'walkable' : 'unwalkable',
-				material: 'dirt'
+				type: material.walkable && position.y > -1 ? 'walkable' : 'unwalkable',
+				material
 			});
 			stageTiles.push(tile);
 			count++;

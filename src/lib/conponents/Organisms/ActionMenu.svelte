@@ -63,7 +63,7 @@
 		<button on:click={onAmbushClicked} disabled={unit.currentTaskPoint < 2 || onAmbush}
 			>Ambush</button
 		>
-		<button on:click={onEquipmentClicked} disabled={unit.currentTaskPoint < 2 || onAmbush}
+		<button on:click={onEquipmentClicked} disabled={unit.currentTaskPoint < 1.5 || onAmbush}
 			>Equipment</button
 		>
 		<button on:click={onEndTurnClicked}>End Turn</button>

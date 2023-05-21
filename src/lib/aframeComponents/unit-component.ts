@@ -21,7 +21,7 @@ AFRAME.registerComponent('unit-component', {
 
 		this.el.addEventListener('click', async (event) => {
 			if (!this.unit) return;
-			console.log('clicked', this.unit, event.target, this.data.state);
+			console.log('clicked', this.unit, event.target, this.unit.state);
 			switch (this.unit.state) {
 				case 'idle':
 				case 'inTurn':

@@ -10,6 +10,7 @@ export const moveToTile = async (path: path, unitEl: Entity) => {
 		step.ambushes.forEach((ambushInstance) => {
 			const attackResult = ambushInstance.attackResult;
 			setTimeout(() => {
+				console.log('addressing ambush attack result', attackResult, ' in ' + i + 'seconds');
 				ambushInstance.ambush.addressAttackResult(attackResult);
 			}, systemConfig.moveAnimationSeconds * i + 1);
 		});

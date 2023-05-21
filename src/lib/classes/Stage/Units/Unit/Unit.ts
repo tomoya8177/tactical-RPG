@@ -18,15 +18,17 @@ import { buildEntity } from './buildEntity';
 import { TURN } from '../../../Turn/Turn';
 import { inTurnIndicator } from './inTurnIndicator';
 import type { Ambush } from '../../Ambushes/Ambush/Ambush';
-import { ATTACK, unitStatus } from '$lib/classes/Attack/Attack';
-import type { attackResult } from '$lib/classes/Attack/Attack';
-import { attackTarget } from '$lib/classes/Attack/attackTarget';
+import { roll3d6 } from '$lib/Maths/dice3d6';
+import type { unitStatusSlugs, unitStatusType } from '$lib/types/unitStatus';
+import type { attackResult } from '$lib/types/attackResult';
+import { rotation2Direction } from '$lib/Maths/rotation2direction';
+import { getUnitStatusObejct } from '$lib/presets/unitStatus';
 export type unitState = 'idle' | 'target' | 'focused' | 'directing' | 'inTurn';
 export class Unit {
 	id: number;
 	state: unitState;
 	type: 'actor' | null;
-	actor: Actor | null;
+	actor: Actor;
 	tile: Tile | null;
 	position: xyz;
 	direction: direction;
@@ -45,11 +47,11 @@ export class Unit {
 	};
 
 	el: Entity;
-	constructor(id: number, type: 'actor' | null = null, actor: Actor | null = null, tile: Tile) {
+	constructor(id: number, type: 'actor' | null = null, actor: Actor, tile: Tile) {
 		this.id = id;
 		this.state = 'idle';
 		this.type = type == null ? 'actor' : type;
-		this.actor = type == null ? null : actor;
+		this.actor = actor;
 		this.tile = tile;
 		this.position = tile.position;
 		this.direction = type == null ? 'S' : 'S';
@@ -79,11 +81,11 @@ export class Unit {
 
 	get speed(): number {
 		if (!this.actor) return 0;
-		return Math.max(
-			0,
-			(this.actor?.DX + this.actor?.HT - this.actor?.damage / 3) / 2 -
-				(this.totalEquipmentWeight - 10) / this.actor.ST
-		);
+		// if actor's HT - damage is less than 3, then your speed is half.
+		let movement =
+			(this.actor.DX + this.actor.HT - this.actor.damage / 3) / 2 -
+			(this.totalEquipmentWeight - 10) / this.actor.ST;
+		return Math.max(0, movement);
 	}
 
 	get movement(): number {
@@ -109,7 +111,7 @@ export class Unit {
 	}
 	get parry(): Array<{ equipment: Equipment; level: number }> {
 		if (this.currentTaskPoint < systemConfig.taskPointParry) return [];
-		if (!this.actor) return [];
+		if (this.isUnconscious()) return [];
 
 		const equipment = this.actor.equipments[0];
 		return [
@@ -142,8 +144,7 @@ export class Unit {
 		if (!this.actor) return;
 
 		this.actor.damage += damage;
-		this.updateLifeBar();
-		this.promptDamage(damage);
+		//	this.updateLifeBar();
 	}
 	promptMessage(message: string): void {
 		const resultText = createAframeEntity('a-text', {
@@ -168,8 +169,6 @@ export class Unit {
 		updateLifeBar(this);
 	}
 	get waitTurn(): number {
-		if (!this.actor) return 0;
-
 		return (this.totalEquipmentWeight + 100) / (this.actor.DX + this.actor.IQ);
 	}
 	getLv(skillName: string): number {
@@ -200,54 +199,61 @@ export class Unit {
 				break;
 			case 'inTurn':
 				this.el.appendChild(inTurnIndicator());
+				if (this.checkUnconscious()) {
+					this.addStatus(getUnitStatusObejct('unconscious'));
+					TURN.end();
+				}
+
 				break;
 		}
 		this.state = state;
 	}
 
 	async moveToTile(path: path): Promise<void> {
-		if (!path) throw new Error('undefined path');
+		if (!path || !this.tile) throw new Error('undefined path');
 		const stepsToBeAmbushed: Array<{
 			step: step;
 			ambush: Ambush;
 		}> = [];
 		for (let i = 0; i < path.steps.length; i++) {
 			let step = path.steps[i];
+			const tile = STAGE.tiles.find((tile) => tile.id == step.tileId);
+			console.log({ step });
+			this.position = step.endPosition;
+			this.direction = rotation2Direction(step.endYRotation);
+			this.tile = STAGE.tiles.find((tile) => step.tileId == tile.id);
 			STAGE.ambushes
-				.filter((ambush) => ambush.state == 'confirmed')
+				.filter((ambush: Ambush) => {
+					if (!path || !this.tile) throw new Error('undefined path');
+					return ambush.isActiveAndTileInRader(tile) && !ambush.ifTileInRader(this.tile);
+				})
 				.forEach((ambush: Ambush) => {
-					//check if attacker still has the taskpoints more than the attack cost of the weapon
-					if (!ambush.attacker || !ambush.weapon) throw new Error('undefined attacker');
-					if (ambush.attacker.currentTaskPoint < ambush.weapon.attackCost) return;
-					if (!this.tile) throw new Error('undefined tile');
-					if (ambush.ifTileInRader(this.tile)) return;
 					console.log({ ambush });
-					const tile = STAGE.tiles.find((tile) => tile.id == step.tileId);
-					if (!ambush.ifTileInRader(tile)) return;
-					this.position = step.endPosition;
-					this.tile = STAGE.tiles.find((tile) => step.tileId == tile.id);
+					//check if attacker still has the taskpoints more than the attack cost of the weapon
 					const attackResult = ambush.attackTarget(this);
 					step.ambushes.push({
 						ambush,
 						attackResult
 					});
 					console.log({ attackResult });
+					if (
+						step.ambushes.length > 0 &&
+						step.ambushes.some(
+							(ambushInstance: { ambush: Ambush; attackResult: attackResult }) =>
+								ambushInstance.attackResult.givenState.some((status) => status.slug == 'dead') ||
+								ambushInstance.attackResult.givenState.some(
+									(status) => status.slug == 'unconscious'
+								) ||
+								ambushInstance.attackResult.givenState.some((status) => status.slug == 'down')
+						)
+					) {
+						path.steps = path.steps.slice(0, i + 1);
+						i = path.steps.length;
+					}
 				});
-			if (
-				step.ambushes.length > 0 &&
-				step.ambushes.some(
-					(ambushInstance: { ambush: Ambush; attackResult: attackResult }) =>
-						ambushInstance.attackResult.givenState.includes('dead') ||
-						ambushInstance.attackResult.givenState.includes('down')
-				)
-			) {
-				path.steps = path.steps.slice(0, i + 1);
-				break;
-			}
 		}
-		console.log({ steps: path.steps });
 
-		this.position = path.position;
+		//this.position = path.position;
 
 		await moveToTile(path, this.el);
 		this.changeState('directing');
@@ -274,19 +280,26 @@ export class Unit {
 	resetTaskPoint() {
 		this.currentTaskPoint = this.taskPoint;
 	}
-	highlightAttackTarget() {
-		this.el.setAttribute('color', 'red');
-		this.el.querySelector('a-box')?.setAttribute('color', 'red');
-		this.state = 'target';
+	hasStatus(statusSlug: unitStatusSlugs): boolean {
+		return this.actor.statuses.some((status) => status.slug == statusSlug);
 	}
-	unhighlightAttackTarget() {
-		console.log('unhighlight attack target is called');
-		this.el.querySelector('a-box')?.setAttribute('color', 'white');
-		this.state = 'idle';
+	isUnconscious(): boolean {
+		return this.actor.statuses.some((status) => status.slug == 'unconscious');
+	}
+	isDown(): boolean {
+		return this.actor.statuses.some((status) => status.slug == 'down');
 	}
 	consumeWaitTurn(waitTurnToConsume: number): void {
+		if (this.hasStatus('bleeding')) {
+			this.actor.damage += 0.2 * waitTurnToConsume;
+			this.updateLifeBar();
+		}
+		if (this.isUnconscious()) return;
 		this.currentWaitTurn = this.currentWaitTurn - waitTurnToConsume;
 		console.log(this.actor?.name, ' his current wait turn is ', this.currentWaitTurn);
+		if (this.currentWaitTurn < this.waitTurn / 2) {
+			this.actor.statuses = this.actor.statuses.filter((status) => status.slug != 'down');
+		}
 	}
 	resetWaitTurn(): void {
 		this.currentWaitTurn = this.waitTurn;
@@ -299,11 +312,33 @@ export class Unit {
 		if (!this.actor) return 0;
 		return this.actor.HT * 3;
 	}
-	addStatus(status: string): void {
+	addStatus(status: unitStatusType): void {
 		this.actor?.statuses.push(status);
+		switch (status.slug) {
+			case 'down':
+				this.currentWaitTurn += this.waitTurn / 2;
+				break;
+		}
 	}
-	remove(): void {
-		alert(this.actor?.name + ' is dead');
-		this.el.parentElement?.removeChild(this.el);
+	checkUnconscious(): boolean {
+		if (this.hasStatus('unconscious')) {
+			return true;
+		}
+		if (1.5 * this.actor.HT - this.actor.damage <= 0) {
+			if (roll3d6(this.actor.HT).result) {
+				return false;
+			} else {
+				return true;
+			}
+		} else {
+			return false;
+		}
+	}
+	checkDead(): boolean {
+		if (this.life < 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

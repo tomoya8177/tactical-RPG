@@ -9,14 +9,10 @@ import { attackTarget } from './attackTarget';
 import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import { Simulation } from './Simulation/Simulation';
 import { addressAttackResult } from './addressAttackResult';
+import type { unitStatusType } from '$lib/types/unitStatus';
+import type { attackResult } from '$lib/types/attackResult';
+import { getAttackTime } from './getAttackTime';
 export const ticksPerSecond = 60;
-export const unitStatus = ['dead', 'down', 'bleeding', 'burning', 'stunned', 'blinded'];
-export interface attackResult {
-	result: string;
-	foeIsDead: boolean;
-	givenState: Array<typeof unitStatus>;
-	damage: number;
-}
 
 type state = 'idle' | 'selectingTarget' | 'simulating' | 'executing' | 'finished';
 
@@ -45,7 +41,10 @@ class Attack {
 		STAGE.changeState('selectingWeapon');
 		//		this.changeState('selectingWeapon');
 	}
-
+	get attackTime(): number {
+		if (!this.attacker || !this.foe || !this.weapon) return 1;
+		return getAttackTime(this.attacker, this.foe, this.weapon);
+	}
 	async changeState(state: state): Promise<void> {
 		switch (state) {
 			case 'idle':
@@ -59,9 +58,7 @@ class Attack {
 				attackTargetTiles.forEach((tile) => {
 					if (tile.id == '' || !TURN.unit) throw new Error('tile is null');
 					const targetUnit = findUnitOnTile(tile.id, STAGE.tiles);
-					if (targetUnit && targetUnit.id != TURN.unit.id) {
-						targetUnit.highlightAttackTarget();
-					}
+					targetUnit?.changeState('target');
 					tile.changeState('target');
 				});
 				break;
@@ -105,12 +102,20 @@ class Attack {
 	execute(): void {
 		if (!this.attacker || !this.foe || !this.weapon) return;
 		this.changeState('executing');
+		if (this.weapon.rangeType == 'ranged') {
+		}
 		this.attackTarget();
+
 		this.changeState('finished');
 	}
 	attackTarget(): attackResult {
 		if (!this.attacker || !this.foe || !this.weapon) throw new Error('attacker is null');
-		const result: attackResult = attackTarget(this.attacker, this.foe, this.weapon);
+		const result: attackResult = attackTarget(
+			this.attacker,
+			this.foe,
+			this.weapon,
+			this.attackTime
+		);
 		console.log({ result });
 		addressAttackResult(this.attacker, this.foe, this.weapon, result);
 

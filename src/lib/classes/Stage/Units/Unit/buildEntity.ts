@@ -9,7 +9,9 @@ export const buildEntity = (unit: Unit) => {
 	});
 	entity.id = unit.id.toString();
 	const model = createAframeEntity('a-gltf-model', {
+		shadow: 'cast: true; receive: true;',
 		src: 'assets/medieval_soldier.glb',
+		position: ' 0 -0.1 0',
 		scale: '0.5 0.5 0.5',
 		color: '#ff0000',
 		material: `color:#ff0000;

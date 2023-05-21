@@ -4,34 +4,22 @@ import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import type { Unit } from '../Stage/Units/Unit/Unit';
 import type { Entity } from 'aframe';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
+import { tileInFront } from './tileInFront';
 
 export const findTargetTiles = (unit: Unit, weapon: Equipment, tiles: Tile[]): Array<Tile> => {
-	const tileInSight = (tile: Tile): boolean => {
-		const tileVector = new Vector3(tile.position.x, 0, tile.position.z).sub(unit.vector3);
-
-		const angle = radians2degrees(unit.directionVector.angleTo(tileVector));
-		if (angle >= 135) {
-			return false;
-		} else {
-			return true;
-		}
-	};
-
 	if (!unit.position) return [];
 	let tilesInRange;
 	switch (weapon.rangeType) {
 		case 'direct':
-			tilesInRange = tiles.filter((tile) => tile.ifInDirectRange(unit.vector3, weapon.length));
+			tilesInRange = tiles.filter((tile) => tile.ifInDirectRange(unit, weapon.length));
 			break;
 		case 'ranged': {
-			tilesInRange = tiles.filter((tile) =>
-				tile.ifInRange(unit.vector3, weapon, tile.position.y - unit.position.y)
-			);
+			tilesInRange = tiles.filter((tile) => tile.ifInRange(unit, weapon));
 			break;
 		}
 	}
 	tilesInRange = tilesInRange.filter((tile) => {
-		return tileInSight(tile);
+		return tileInFront(unit, tile) && tile.type == 'walkable';
 	});
 	return tilesInRange;
 };

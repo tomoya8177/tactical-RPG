@@ -6,6 +6,8 @@ import type { Tile } from '../Stage/Tiles/Tile/Tile';
 import type { direction } from '$lib/types/direction';
 import type { Ambush } from '../Stage/Ambushes/Ambush/Ambush';
 import type { attackResult } from '../Attack/Attack';
+import { STAGE } from '../Stage/Stage';
+import { radians2degrees } from '$lib/Maths/radian2degrees';
 
 export interface step {
 	tileId: number | '';
@@ -39,27 +41,44 @@ export class Pathfinder {
 		this.paths = [];
 		this.tiles = tiles;
 	}
+
 	requiredPoints(nextTile: Tile, position: xyz) {
 		const diff = nextTile.position.y - position.y;
-		let consumedPoints = 1;
-		if (diff > 0.6) {
+		let consumedPoints = 1.3;
+		if (diff > 1.8) {
 			consumedPoints = 99999;
+		} else if (diff > 1.5) {
+			consumedPoints = 9;
+		} else if (diff > 1.2) {
+			consumedPoints = 7;
+		} else if (diff > 0.9) {
+			consumedPoints = 6;
+		} else if (diff > 0.6) {
+			consumedPoints = 4;
 		} else if (diff > 0.3) {
 			consumedPoints = 2;
-		} else if (diff > 0.1) {
-			consumedPoints = 1.5;
-		} else if (diff > -0.1) {
-			//pass through
 		} else if (diff > -0.3) {
+			//pass through
+		} else if (diff > -0.6) {
 			consumedPoints = 1.5;
-		} else if (diff > -1) {
+		} else if (diff > -0.9) {
 			consumedPoints = 2;
-		} else if (diff <= -1) {
+		} else if (diff <= -1.2) {
+			consumedPoints = 3;
+		} else if (diff <= -1.5) {
+			consumedPoints = 4;
+		} else if (diff <= -1.8) {
+			consumedPoints = 5;
+		} else if (diff <= -2) {
 			consumedPoints = 99999;
 		}
+		consumedPoints = nextTile.movementCost(consumedPoints);
 		return consumedPoints;
 	}
 	moveForward(previousSteps: Array<step>, nextTile: Tile, position: xyz, consumedPoints: number) {
+		const endYRotation = radians2degrees(
+			Math.atan2(nextTile.position.x - position.x, nextTile.position.z - position.z)
+		);
 		const updatedPreviousSteps: Array<step> = [
 			...previousSteps,
 			{
@@ -68,7 +87,9 @@ export class Pathfinder {
 				startPosition: position,
 				endPosition: nextTile.position,
 				startYRotation: null,
-				endYRotation: null,
+				consumedPoints,
+
+				endYRotation,
 				ambushes: []
 			}
 		];
@@ -132,7 +153,10 @@ export class Pathfinder {
 		let newDirection: direction;
 		let startYRotation = null;
 		let endYRotation = null;
-		if (points >= 2) {
+		let tile = this.tiles.find((tile) => tile.x == position.x && tile.z == position.z);
+		if (!tile) throw new Error('Tile not found');
+		consumedPoints = tile.movementCost(2);
+		if (points >= consumedPoints) {
 			//make left turn
 			switch (direction) {
 				case 'S':
@@ -160,16 +184,18 @@ export class Pathfinder {
 			const updatedPreviousSteps: Array<step> = [
 				...previousSteps,
 				{
-					tileId: '',
+					tileId: this.tiles.find(
+						(tile) => tile.position.x == position.x && tile.position.z == position.z
+					)?.id,
 					startPosition: position,
 					endPosition: position,
 					movement: 'TL',
 					startYRotation,
 					endYRotation,
+					consumedPoints,
 					ambushes: []
 				}
 			];
-			const consumedPoints = 2;
 
 			this.findPath(
 				position,
@@ -213,15 +239,18 @@ export class Pathfinder {
 				...previousSteps,
 				{
 					movement: 'TR',
-					tileId: '',
+					tileId: this.tiles.find(
+						(tile) => tile.position.x == position.x && tile.position.z == position.z
+					)?.id,
 					startPosition: position,
 					endPosition: position,
 					startYRotation,
 					endYRotation,
+					consumedPoints,
+
 					ambushes: []
 				}
 			];
-			const consumedPoints = 2;
 
 			this.findPath(
 				position,

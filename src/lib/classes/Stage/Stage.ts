@@ -51,13 +51,15 @@ class Stage {
 				//tile.el.setAttribute('position', tile.position);
 			});
 		}
-		const grounds = Array.from(document.querySelectorAll('.ground')) as Array<Entity>;
-		this.structures = [];
-		grounds.forEach((ground) => {
-			const box = new Box3().setFromObject(ground.object3D);
-			this.structures.push(box);
-		});
-		console.log({ structures: this.structures });
+		setTimeout(() => {
+			const grounds = Array.from(document.querySelectorAll('.ground')) as Array<Entity>;
+			this.structures = [];
+			grounds.forEach((ground) => {
+				const box = new Box3().setFromObject(ground.object3D);
+				this.structures.push(box);
+			});
+			console.log({ structures: this.structures });
+		}, 100);
 	}
 
 	changeState(state: state) {
@@ -82,20 +84,14 @@ class Stage {
 		}
 		this.state = state;
 	}
-	async highlightUnit(): Promise<boolean> {
-		const unit = this.unitOnFocus;
-		if (!unit) return Promise.resolve(false);
+	async focusOnUnit(unit: Unit): Promise<void> {
+		this.unitOnFocus = unit;
 		await CAMERA.move(unit.position);
 		uiController.show('actorData');
 		//uiController.update({ actionMenu: true });
-
+		console.log(' fidingPath ');
 		this.findPath(unit);
-		return Promise.resolve(true);
-	}
-	async focusOnUnit(unit: Unit): Promise<boolean> {
-		this.unitOnFocus = unit;
-		await this.highlightUnit();
-		return Promise.resolve(true);
+		console.log(' found Path ');
 	}
 
 	findPath(unit: Unit): Array<path> {

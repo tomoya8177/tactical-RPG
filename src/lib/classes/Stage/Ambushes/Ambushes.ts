@@ -18,11 +18,10 @@ export class Ambushes extends Array {
 	ifTileInSomeRader(tile: Tile): Ambush[] {
 		const ambushes: Ambush[] = [];
 		this.forEach((ambush) => {
-			const ambushIsActive = ambush.state == 'confirmed';
-			if (!ambushIsActive) return;
+			if (!ambush.isActiveAndTileInRader(tile)) return;
 			const ambushIsMine = ambush.attacker.id == TURN.unit.id;
 			const iAmInTheRaderAlready = ambush.ifTileInRader(TURN.unit.tile);
-			if (!ambushIsMine && !iAmInTheRaderAlready && ambush.ifTileInRader(tile)) {
+			if (!ambushIsMine && !iAmInTheRaderAlready) {
 				ambushes.push(ambush);
 			}
 		});

@@ -1,4 +1,5 @@
 import { autoActor } from '$lib/presets/autoActor';
+import type { unitStatusType } from '../Attack/Attack';
 import type { Equipment } from '../Equipment/Equipment';
 export class Actor {
 	name: string;
@@ -7,7 +8,7 @@ export class Actor {
 	IQ: number;
 	HT: number;
 	damage: number;
-	statuses: Array<string>;
+	statuses: Array<unitStatusType>;
 	equipments: Array<Equipment>;
 	skills: Array<{
 		name: string;

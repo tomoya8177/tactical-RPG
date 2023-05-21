@@ -1,7 +1,8 @@
+import type { attackResult } from '$lib/types/attackResult';
 import type { Equipment } from '../Equipment/Equipment';
 import { STAGE } from '../Stage/Stage';
 import type { Unit } from '../Stage/Units/Unit/Unit';
-import type { attackResult } from './Attack';
+import { getUnitStatusObejct } from '$lib/presets/unitStatus';
 
 export const addressAttackResult = (
 	attacker: Unit,
@@ -9,9 +10,27 @@ export const addressAttackResult = (
 	weapon: Equipment,
 	result: attackResult
 ): void => {
-	if (result.damage) {
-		foe.giveDamage(result.damage);
+	let promptMessage = '';
+	if (!foe.isUnconscious()) {
+		const tobeUnconscious = foe.checkUnconscious();
+		if (tobeUnconscious) {
+			result.givenState.push(getUnitStatusObejct('unconscious'));
+
+			result.givenState.push(getUnitStatusObejct('down'));
+		}
 	}
+	result.givenState.forEach((status) => {
+		if (foe.hasStatus(status.slug)) return;
+		foe.addStatus(status);
+		promptMessage += ' +' + status.name;
+	});
+	if (result.damage) {
+		foe.updateLifeBar();
+		promptMessage = Math.round(result.damage * 10) + promptMessage;
+	}
+
+	foe.promptResult(promptMessage);
+
 	attacker.consumeTaskPoint(weapon.attackCost);
 	switch (result.result) {
 		case 'miss':
@@ -24,7 +43,7 @@ export const addressAttackResult = (
 			break;
 	}
 	if (result.foeIsDead) {
-		foe.remove();
+		//foe.remove();
 		STAGE.units.remove(foe);
 	}
 };

@@ -10,45 +10,36 @@ import { appendRangeCurveToScene } from './appendRangeCurveToScene';
 import { STAGE } from '$lib/classes/Stage/Stage';
 import { possibility } from '$lib/presets/rollPossibility';
 import { noticePossibility } from '../noticePossibility';
-import { getDamage } from '../getDamage';
-type rangeSimulationResult = {
-	curve: Entity | null;
-	intercepted: boolean;
-	outOfRange: boolean;
-};
-type simulationResult = {
-	result: string;
-	hit: number;
-	notice: number;
-	dodge: number;
-	parry: Array<{
-		equipment: Equipment;
-		level: number;
-	}>;
-	damage: number;
-};
+import { getDamage, giveDamageBonus } from '../getDamage';
+import type { rangeSimulationResult, simulationResult } from '$lib/types/simulationResult';
+import { drawCurveForRangedAttack } from './drawCurveForRangedAttack';
+import { get } from 'svelte/store';
+import { getAttackTime } from '../getAttackTime';
+
 export class Simulation {
 	attacker: Unit;
 	foe: Unit;
 	weapon: Equipment;
-	curves: Array<Entity>;
+	curve: Entity | null;
 	result: simulationResult | null;
 	constructor(attacker: Unit, foe: Unit, weapon: Equipment) {
 		this.attacker = attacker;
 		this.foe = foe;
 		this.weapon = weapon;
-		this.curves = [];
+		this.curve = null;
 		this.result = null;
 	}
 	destroy = (): void => {
 		this.removeCurves();
 	};
 	removeCurves = (): void => {
-		this.curves.forEach((curve) => {
-			curve.parentNode?.removeChild(curve);
-		});
-		this.curves = [];
+		if (!this.curve) return;
+		this.curve.parentNode?.removeChild(this.curve);
+		this.curve = null;
 	};
+	get attackTime(): number {
+		return getAttackTime(this.attacker, this.foe, this.weapon);
+	}
 	simulate = async (): Promise<simulationResult> => {
 		return new Promise(async (resolve) => {
 			if (this.weapon.rangeType == 'ranged') {
@@ -56,10 +47,14 @@ export class Simulation {
 
 				if (rangeSimulationResult.intercepted) {
 					resolve({
-						result: 'intercepted'
+						result: 'intercepted',
+						hit: 0,
+						notice: 0,
+						dodge: 0,
+						parry: [],
+						damage: 0
 					});
 				}
-				console.log({ rangeSimulationResult });
 			}
 			const hit = possibility(this.attacker.getLv(this.weapon.skillToUse));
 			const notice = noticePossibility(this.attacker, this.foe);
@@ -68,46 +63,23 @@ export class Simulation {
 				result: 'success',
 				hit,
 				notice,
-				dodge: possibility(this.foe.dodge),
-				parry: this.foe.parry,
-				damage: getDamage(this.attacker, this.foe, this.weapon)
+				dodge: possibility(this.foe.dodge * this.attackTime),
+				parry: this.foe.parry.map((parry) => {
+					parry.level = parry.level * this.attackTime;
+					return parry;
+				}),
+				damage: giveDamageBonus(getDamage(this.attacker, this.foe, this.weapon), this.weapon)
 			};
-			console.log(this.result, this.attacker.getLv(this.weapon.skillToUse), this.weapon.skillToUse);
+			console.log(
+				this.result,
+				this.attacker.getLv(this.weapon.skillToUse),
+				this.weapon.skillToUse,
+				this.attackTime
+			);
 			resolve(this.result);
 		});
 	};
 	simulateRangeAttack = (): Promise<rangeSimulationResult> => {
-		const drawCurveForRangedAttack = (distance: number, angle: number): Entity => {
-			const curve = createAframeEntity('a-entity', {
-				visible: 'false'
-			});
-
-			const speedX = (this.weapon.range * Math.cos(angle)) / ticksPerSecond;
-			let speedY = (this.weapon.range * Math.sin(angle)) / ticksPerSecond;
-			let x = speedX;
-			let y = speedY;
-			let prevX = 0;
-			let prevY = 0;
-			while (y > -45 && y < 45 && distance > x) {
-				const line = createAframeEntity('a-entity', {
-					line: `
-					start: ${prevX} ${prevY} 0;
-					end: ${x} ${y} 0;
-					color: #000;
-					`
-				});
-				curve.appendChild(line);
-
-				prevX = x;
-				prevY = y;
-				speedY -= systemConfig.gravity / (ticksPerSecond * ticksPerSecond);
-				x += speedX;
-				y += speedY;
-			}
-
-			return curve;
-		};
-
 		const distance = this.attacker.vector3.distanceTo(this.foe.vector3);
 		const yDiff = this.foe.y - this.attacker.y;
 		const result = getAngleForRangedAttack(distance, yDiff, this.weapon.range);
@@ -117,56 +89,40 @@ export class Simulation {
 				intercepted: true,
 				outOfRange: true
 			});
-		const angles = result[0] > result[1] ? [result[1], result[0]] : [result[0], result[1]];
-		for (let i = 0; i < 2; i++) {
-			let curve = drawCurveForRangedAttack(distance, angles[i]);
+		const angle = Math.min(result[0], result[1]);
+		let curve = drawCurveForRangedAttack(distance, angle, this.weapon, ticksPerSecond);
 
-			curve = appendRangeCurveToScene(curve, this.attacker, this.foe);
-			this.curves.push(curve);
-		}
+		curve = appendRangeCurveToScene(curve, this.attacker, this.foe);
+		this.curve = curve;
 
 		return new Promise((resolve) => {
 			setTimeout(() => {
-				const result: rangeSimulationResult[] = [];
-				this.curves.forEach((curve) => {
-					let intercepted: boolean = false;
-					for (let line of Array.from(curve.children)) {
+				if (!this.curve) return resolve({});
+				let intercepted: boolean = false;
+				for (let line of Array.from(this.curve.children)) {
+					if (intercepted) {
+						line.parentNode?.removeChild(line);
+					} else {
 						const testBox = new Box3().setFromObject(line.object3D);
-
-						if (intercepted) {
-							line.parentNode?.removeChild(line);
+						const intersectBox = STAGE.structures.find((box, i) => {
+							return box.intersectsBox(testBox);
+						});
+						if (intersectBox) {
+							intercepted = true;
+							line.setAttribute('line', 'color: red');
 						} else {
-							const intersectBox = STAGE.structures.find((box, i) => {
-								return box.intersectsBox(testBox);
-							});
-							if (intersectBox) {
-								intercepted = true;
-								line.setAttribute('line', 'color: red');
-							} else {
-								line.setAttribute('line', 'color: lightgreen');
-							}
+							line.setAttribute('line', 'color: lightgreen');
 						}
 					}
-					result.push({
-						curve: curve,
-						intercepted,
-						outOfRange: false
-					});
-				});
-
-				if (result[0].intercepted && result[1].intercepted) {
-					this.curves[1].setAttribute('visible', 'true');
-					this.curves[0].parentNode?.removeChild(this.curves[0]);
-					resolve(result[1]);
-				} else if (result[0].intercepted) {
-					this.curves[1].setAttribute('visible', 'true');
-					this.curves[0].parentNode?.removeChild(this.curves[0]);
-					resolve(result[1]);
-				} else {
-					this.curves[0].setAttribute('visible', 'true');
-					this.curves[1].parentNode?.removeChild(this.curves[1]);
-					resolve(result[0]);
 				}
+				const result = {
+					curve: this.curve,
+					intercepted,
+					outOfRange: false
+				};
+
+				this.curve.setAttribute('visible', 'true');
+				resolve(result);
 			}, 1);
 		});
 	};

@@ -12,7 +12,9 @@ class Turn {
 		if (!unit) unit = findNextUnit();
 		this.unit = unit;
 		this.unit.resetTaskPoint();
+		console.log('clearing');
 		STAGE.ambushes.clearFor(this.unit);
+		console.log('cleared');
 		await STAGE.focusOnUnit(this.unit);
 		STAGE.changeState('idle');
 		this.unit.changeState('inTurn');
@@ -34,6 +36,11 @@ class Turn {
 		STAGE.tiles.reset();
 		this.unit.resetState();
 		this.unit = null;
+		STAGE.units.forEach((unit) => {
+			if (unit.checkDead()) {
+				STAGE.units.remove(unit);
+			}
+		});
 		this.start();
 	}
 }

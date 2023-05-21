@@ -9,21 +9,19 @@ export const buildEntity = (tile: Tile): Entity => {
 	});
 	entity.id = tile.id.toString();
 	const plane = createAframeEntity('a-plane', {
-		shadow: 'true',
+		shadow: 'cast: true; receive: true;',
 		width: 1,
 		height: 1,
 		rotation: '-90 0 0',
-		color: 'grey'
+		color: `${tile.material.color}`
 	});
 	entity.appendChild(plane);
 	const box = createAframeEntity('a-box', {
-		wireframe: 'true',
-		'segments-height': tile.y + 5,
-		'wireframe-linewidth': 4,
+		shadow: 'cast: true; receive: true;',
 		width: 1,
 		height: tile.y + 5,
 		depth: 1,
-		position: `0 ${(tile.y / 2 + 2.5) * -1} 0`
+		position: `0 ${(tile.y / 2 + 2.5) * -1 - 0.01} 0`
 	});
 	box.classList.add('ground');
 	entity.appendChild(box);

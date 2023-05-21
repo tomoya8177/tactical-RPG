@@ -3,6 +3,7 @@ import type { Unit } from '../Stage/Units/Unit/Unit';
 import { radians2degrees } from '$lib/Maths/radian2degrees';
 
 export const noticePossibility = (attacker: Unit, foe: Unit) => {
+	if (foe.isUnconscious()) return 0;
 	let v1;
 	switch (foe.direction) {
 		case 'S':
@@ -25,7 +26,9 @@ export const noticePossibility = (attacker: Unit, foe: Unit) => {
 	if (angle < 45) {
 		return 1;
 	} else if (angle < 135) {
-		return 0.5;
+		const num = 1 - (angle - 45) / 90;
+		console.log({ num });
+		return num;
 	} else {
 		return 0.1;
 	}

@@ -6,9 +6,15 @@ import type { Unit } from '../Stage/Units/Unit/Unit';
 import type { Equipment } from '../Equipment/Equipment';
 import { systemConfig } from '$lib/systemConfig';
 import { noticePossibility } from './noticePossibility';
-import { getDamage } from './getDamage';
-import type { unitStatus } from './Attack';
-export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): attackResult => {
+import { getDamage, giveDamageBonus } from './getDamage';
+import { getUnitStatusObejct, unitStatus } from '$lib/presets/unitStatus';
+
+export const attackTarget = (
+	attacker: Unit,
+	foe: Unit,
+	equipment: Equipment,
+	attackTime: number
+): attackResult => {
 	const checkIfAttackHits = () => {
 		const skillLv = attacker.getLv(equipment.skillToUse);
 		console.log(skillLv);
@@ -20,11 +26,12 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 	};
 	const checkIfFoeCanDodge = () => {
 		let dodge = foe.dodge;
-		return roll3d6(dodge).result;
+		return roll3d6(dodge * attackTime).result;
 	};
 	const checkIfFoeCanParry = () => {
 		const parries = foe.parry;
-		return roll3d6(parries[0].level).result;
+		if (parries.length === 0) return false;
+		return roll3d6(parries[0].level * attackTime).result;
 	};
 
 	const givenState: typeof unitStatus = [];
@@ -38,7 +45,7 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 			foeIsDead: false
 		};
 	}
-	if (checkIfFoeNoticesAttack()) {
+	if (!foe.isUnconscious() && checkIfFoeNoticesAttack()) {
 		console.log('noticed');
 		if (checkIfFoeCanDodge()) {
 			foe.promptResult('Dodge');
@@ -62,10 +69,21 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 			};
 		}
 	}
-	const damage = getDamage(attacker, foe, equipment);
-	if (!!foe.actor && damage > foe.actor.HT / 2) {
-		givenState.push('down');
+	let damage = getDamage(attacker, foe, equipment);
+	if (damage > foe.actor.HT / 2) {
+		const status = getUnitStatusObejct('down');
+		givenState.push(status);
 	}
+	damage = giveDamageBonus(damage, equipment);
+
+	// if weapon's damage type was bladed and the damage was more than 1/2 of foe's HT, foe will be given the "bleeding" status
+	if (equipment.harmType === 'bladed' && damage > foe.actor.HT / 2) {
+		const status = getUnitStatusObejct('bleeding');
+		givenState.push(status);
+	}
+
+	foe.giveDamage(damage);
+
 	//	const damage = giveDamageToFoe();
 	if (damage === 'error') {
 		return {
@@ -76,7 +94,8 @@ export const attackTarget = (attacker: Unit, foe: Unit, equipment: Equipment): a
 		};
 	}
 	if (foe.life <= 0) {
-		foe.addStatus('dead');
+		const status = getUnitStatusObejct('dead');
+		foe.addStatus(status);
 	}
 
 	return {

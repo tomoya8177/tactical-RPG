@@ -49,7 +49,10 @@
 				parry:
 
 				{#each result.parry as parry}
-					<WeaponTag weapon={parry.equipment} level={parry.level} />
+					<WeaponTag
+						weapon={parry.equipment}
+						level={ATTACK.foe.getLv(parry.equipment.skillToUse)}
+					/>
 					/
 					{Math.round(possibility(parry.level) * 100)}%,
 				{/each}

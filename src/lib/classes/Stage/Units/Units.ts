@@ -7,6 +7,7 @@ export class Units extends Array {
 		});
 	}
 	remove(unit: Unit) {
+		unit.el.parentElement?.removeChild(unit.el);
 		this.splice(this.indexOf(unit), 1);
 	}
 }

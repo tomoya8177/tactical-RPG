@@ -58,9 +58,9 @@
 {/if}
 <a-scene
 	id="scene"
-	outline
 	cursor="rayOrigin: mouse;
 	"
+	raycaster="objects: :not(.unclickable)"
 	renderer="antialias: true;
 				colorManagement: true;
 				sortObjects: true;
@@ -71,19 +71,36 @@
 	<a-assets>
 		<img src="assets/water.jpg" id="water" />
 	</a-assets>
+	<a-sky color="#bbe" />
+	<!-- show me css for lightorange -->
+
 	<a-entity
-		environment="
-	
-	ground:none;
-  "
+		light="type:directional;
+		 castShadow:true;
+		 intensity: 1;
+	shadowCameraTop: 5;
+	shadowCameraBottom: -20;
+	shadowCameraLeft: -15;
+	shadowCameraRight: 15;
+	color:#fdd9b5;
+	shadowMapHeight:1024;
+	shadowMapWidth:1024;
+	"
+		position="100 100 100"
+	/>
+	<a-entity
+		light="type: hemisphere; intensity: 0.5;
+	color:lightblue;
+	groundColor:grey"
 	/>
 	<a-plane
-		shadow="true"
+		class="unclickable"
+		shadow="receive:true;cast:false"
 		width="20"
 		height="20"
 		rotation="-90 0 0"
-		position="9.5 0 9,5"
-		opacity="0.7"
+		position="9.5 0 9.5"
+		opacity="0.5"
 		material="shader: flat; src: #water;repeat:10 10;"
 	/>
 	<a-entity tactics-navigation id="rig" position="0 0 0">

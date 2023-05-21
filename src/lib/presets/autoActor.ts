@@ -27,7 +27,7 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 1,
 				rangeType: 'direct',
-				equippedOn: 'rightHand'
+				equippedOn: 'waist'
 			}),
 			new Equipment({
 				name: 'Spear',
@@ -59,9 +59,26 @@ export const autoActor = (): Actor => {
 				protection: 0,
 				maxLife: 10,
 				life: 10,
-				range: 10,
+				range: 8,
 				rangeType: 'ranged',
 				equippedOn: 'leftHand'
+			}),
+			new Equipment({
+				name: 'GreatBow',
+				lethality: 12,
+				weight: 2,
+				length: 1,
+				skillToUse: 'Crossbow',
+				type: 'weapon',
+				attackType: 'thrusting',
+				harmType: 'bladed',
+				attackCost: 1.2,
+				protection: 0,
+				maxLife: 10,
+				life: 10,
+				range: 10,
+				rangeType: 'ranged',
+				equippedOn: 'rightHand'
 			})
 		],
 		skills: [

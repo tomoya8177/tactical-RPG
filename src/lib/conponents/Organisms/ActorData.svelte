@@ -7,70 +7,83 @@
 	export let unit: Unit;
 </script>
 
-{#if unit && unit.actor}
-	<div class="actor-data" transition:fade>
-		Actor Data
-		<div style="display:flex;gap:1rem">
-			<div style="flex:initial">
-				ID:
-				{unit.id}
-			</div>
-			<div style="flex:auto">
-				Name:
-				{unit.actor.name}
-			</div>
+<div class="actor-data" transition:fade>
+	Actor Data
+	<div style="display:flex;gap:1rem">
+		<div style="flex:initial">
+			ID:
+			{unit.id}
 		</div>
-		<div style="display:flex;gap:1rem">
-			<div style="flex:initial">
-				ST:
-				{unit.actor.ST}
-			</div>
-			<div style="flex:auto">
-				DX:
-				{unit.actor.DX}
-			</div>
-			<div style="flex:auto">
-				IQ:
-				{unit.actor.IQ}
-			</div>
-			<div style="flex:auto">
-				HT:
-				{unit.actor.HT}
-			</div>
-			<div style="flex:auto">
-				Damage:
-				{unit.actor.damage}
-			</div>
-			<div style="flex:auto">
-				Speed:
-				{showDecimal(unit.speed, 1)}
-			</div>
-			<div>
-				WT:
-				{#if unit.id == TURN.unit?.id}
-					0
-				{:else}
-					{Math.round(showDecimal(unit.currentWaitTurn, 2) * 100)}
-				{/if}
-				/ {Math.round(showDecimal(unit.waitTurn, 2) * 100)}
-			</div>
-		</div>
-		<div style="display:flex;gap:1rem">
-			<div style="flex:initial">
-				Life:
-				{showDecimal(unit.life, 1) * 10} / {(unit.maxLife || 0) * 10}
-			</div>
-			<div style="flex:initial">
-				Task Point:
-				{showDecimal(unit.currentTaskPoint, 2)}
-			</div>
-			<div style="flex:initial">
-				Movement:
-				{showDecimal(unit.movement, 1)}
-			</div>
+		<div style="flex:auto">
+			Name:
+			{unit.actor.name}
 		</div>
 	</div>
-{/if}
+	<div style="display:flex;gap:1rem">
+		<div style="flex:initial">
+			ST:
+			{unit.actor.ST}
+		</div>
+		<div style="flex:auto">
+			DX:
+			{unit.actor.DX}
+		</div>
+		<div style="flex:auto">
+			IQ:
+			{unit.actor.IQ}
+		</div>
+		<div style="flex:auto">
+			HT:
+			{unit.actor.HT}
+		</div>
+		<div style="flex:auto">
+			Damage:
+			{unit.actor.damage.toFixed(2)}
+		</div>
+		<div style="flex:auto">
+			Speed:
+			{unit.speed.toFixed(1)}
+		</div>
+		<div>
+			WT:
+			{#if unit.id == TURN.unit?.id}
+				0
+			{:else}
+				{Math.round(showDecimal(unit.currentWaitTurn, 2) * 100)}
+			{/if}
+			/ {Math.round(showDecimal(unit.waitTurn, 2) * 100)}
+		</div>
+	</div>
+	<div style="display:flex;gap:1rem">
+		<div style="flex:initial">
+			Life:
+			{showDecimal(unit.life, 1) * 10} / {(unit.maxLife || 0) * 10}
+		</div>
+		<div style="flex:initial">
+			Task Point:
+			{showDecimal(unit.currentTaskPoint, 2)}
+		</div>
+		<div style="flex:initial">
+			Movement:
+			{showDecimal(unit.movement, 1)}
+		</div>
+	</div>
+	<div style="display:flex;gap:1rem">
+		Status
+		<div style="flex:initial">
+			{#each unit.actor.statuses as status}
+				{status.name}
+			{/each}
+		</div>
+	</div>
+	<div style="display:flex;gap:1rem">
+		Tile
+		<div style="flex:initial">
+			{unit.tile?.material.name}
+			(Step:{unit.tile?.y.toFixed(2)})
+		</div>
+	</div>
+</div>
 
 <style>
 	.actor-data {

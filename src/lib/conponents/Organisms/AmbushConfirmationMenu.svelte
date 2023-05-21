@@ -1,12 +1,14 @@
 <script lang="ts">
 	import type { Ambush } from '$lib/classes/Stage/Ambushes/Ambush/Ambush';
 	import { STAGE } from '$lib/classes/Stage/Stage';
+	import { TURN } from '$lib/classes/Turn/Turn';
 	import WeaponTag from '../Atoms/WeaponTag.svelte';
 	export let ambush: Ambush;
 	const onOKClicked = () => {
 		console.log('ok clicked');
 		ambush.confirm();
 		STAGE.changeState('idle');
+		TURN.end();
 	};
 	const onCancelClicked = () => {
 		console.log('cancel clicked');

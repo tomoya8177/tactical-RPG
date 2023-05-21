@@ -18,6 +18,7 @@ const toY = (direction: relativeDirection, yRotation: number) => {
 	}
 };
 const finalDirection = (to: number): direction => {
+	if (to < 0) to = 360 + to;
 	switch (to % 360) {
 		case 0:
 			return 'S';
