@@ -4,6 +4,7 @@
 	import { TURN } from '$lib/classes/Turn/Turn';
 	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
 	import { fade } from 'svelte/transition';
+	import Life from '../Atoms/Life.svelte';
 	export let unit: Unit;
 </script>
 
@@ -22,24 +23,23 @@
 	<div style="display:flex;gap:1rem">
 		<div style="flex:initial">
 			ST:
-			{unit.actor.ST}
+			{unit.actor.ST.toFixed(0)}
+			({unit.ST.toFixed(0)})
 		</div>
 		<div style="flex:auto">
 			DX:
-			{unit.actor.DX}
+			{unit.actor.DX.toFixed(0)}
+			({unit.DX.toFixed(0)})
 		</div>
 		<div style="flex:auto">
 			IQ:
-			{unit.actor.IQ}
+			{unit.actor.IQ.toFixed(0)}
 		</div>
 		<div style="flex:auto">
 			HT:
-			{unit.actor.HT}
+			{unit.actor.HT.toFixed(0)}
 		</div>
-		<div style="flex:auto">
-			Damage:
-			{unit.actor.damage.toFixed(2)}
-		</div>
+
 		<div style="flex:auto">
 			Speed:
 			{unit.speed.toFixed(1)}
@@ -57,7 +57,7 @@
 	<div style="display:flex;gap:1rem">
 		<div style="flex:initial">
 			Life:
-			{showDecimal(unit.life, 1) * 10} / {(unit.maxLife || 0) * 10}
+			<Life {unit} />
 		</div>
 		<div style="flex:initial">
 			Task Point:

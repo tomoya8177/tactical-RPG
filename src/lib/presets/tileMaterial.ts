@@ -1,4 +1,4 @@
-export type tileMaterial =
+export type tileMaterialSlug =
 	| 'dirt'
 	| 'waterSurface'
 	| 'mud'
@@ -10,8 +10,8 @@ export type tileMaterial =
 	| 'underwaterSandShallow'
 	| 'underwaterSandDeep'
 	| 'air';
-type TileMaterial = {
-	slug: tileMaterial;
+export type tileMaterial = {
+	slug: tileMaterialSlug;
 	name: string;
 	color: string;
 	walkable: boolean;
@@ -22,7 +22,7 @@ type TileMaterial = {
 	DX: number;
 	move: number;
 };
-export const tileMaterials: TileMaterial[] = [
+export const tileMaterials: tileMaterial[] = [
 	{
 		slug: 'dirt',
 		name: 'Dirt',
@@ -41,8 +41,8 @@ export const tileMaterials: TileMaterial[] = [
 		color: '#2f4f4f',
 		walkable: false,
 		swimmable: false,
-		hoverable: true,
-		skiiable: false,
+		hoverable: false,
+		skiiable: true,
 		ST: 0,
 		DX: 0,
 		move: 0 //because this is for jetski

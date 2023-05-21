@@ -1,38 +1,14 @@
-export const bodyParts = {
-	head: {
-		title: 'Head'
-	},
-	torso: {
-		title: 'Torso'
-	},
-	leftArm: {
-		title: 'Left Arm'
-	},
-	leftHand: {
-		title: 'Left Hand'
-	},
-	rightArm: {
-		title: 'Right Arm'
-	},
-	rightHand: {
-		title: 'Right Hand'
-	},
-	leftLeg: {
-		title: 'Left Leg'
-	},
-	rightLeg: {
-		title: 'Right Leg'
-	},
-	waist: {
-		title: 'Waist'
-	},
-
-	back: {
-		title: 'Back'
-	}
-};
-
-type bodyParts = keyof typeof bodyParts;
+import type { bodyPartsSlug } from '$lib/presets/bodyParts';
+export type equipmentTypes =
+	| 'weapon'
+	| 'armor'
+	| 'helmet'
+	| 'mask'
+	| 'shield'
+	| 'gloves'
+	| 'boots'
+	| 'bandage'
+	| 'accessory';
 export class Equipment {
 	name: string;
 	weight: number;
@@ -42,13 +18,15 @@ export class Equipment {
 	attackType: attackType;
 	attackCost: number;
 	harmType: harmType;
-	type: 'weapon' | 'armor' | 'shield';
+	type: equipmentTypes;
+	canParry: boolean;
+
 	protection: number;
 	life: number;
 	maxLife: number;
 	range: number;
 	rangeType: rangeType;
-	equippedOn: bodyParts | null = null;
+	equippedOn: bodyPartsSlug | null = null;
 	constructor(data: Equipment) {
 		this.name = data.name;
 		this.weight = data.weight;
@@ -65,6 +43,7 @@ export class Equipment {
 		this.range = data.range || 30;
 		this.rangeType = data.rangeType || 'direct';
 		this.equippedOn = data.equippedOn || null;
+		this.canParry = data.canParry || false;
 	}
 }
 export type rangeType = 'direct' | 'ranged';

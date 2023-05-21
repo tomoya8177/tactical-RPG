@@ -20,9 +20,12 @@ export const addressAttackResult = (
 		}
 	}
 	result.givenState.forEach((status) => {
-		if (foe.hasStatus(status.slug)) return;
-		foe.addStatus(status);
+		if (foe.actor.statuses.has(status.slug)) return;
+		foe.actor.statuses.push(status);
 		promptMessage += ' +' + status.name;
+		if (status.slug == 'down') {
+			foe.currentWaitTurn += foe.waitTurn / 2;
+		}
 	});
 	if (result.damage) {
 		foe.updateLifeBar();

@@ -1,3 +1,4 @@
+import type { bodyPartsSlug } from '$lib/presets/bodyParts';
 import type { Equipment } from '../Equipment/Equipment';
 import type { Unit } from '../Stage/Units/Unit/Unit';
 
@@ -11,13 +12,15 @@ export const getDamage = (attacker: Unit, foe: Unit, weapon: Equipment): number 
 	}
 	return damage;
 };
-export const giveDamageBonus = (damage: number, weapon: Equipment) => {
+export const giveDamageBonus = (damage: number, weapon: Equipment, bodyPart: bodyPartsSlug) => {
+	if (bodyPart === 'head') return damage * 4;
 	switch (weapon.attackType) {
 		case 'thrusting':
 			switch (weapon.harmType) {
 				case 'blunt':
 					return damage;
 				case 'bladed':
+					if (bodyPart === 'heart') return damage * 3;
 					return damage * 2;
 			}
 			break;

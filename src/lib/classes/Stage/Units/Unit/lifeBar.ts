@@ -1,4 +1,5 @@
 import { createAframeEntity } from '$lib/createAframeEntity';
+import { drawRectangular } from '$lib/drawRectangular';
 import type { Unit } from './Unit';
 
 const height = 0.05;
@@ -24,6 +25,8 @@ export const lifeBar = () => {
 		'look-at-camera': '',
 		scale: `${width} 1 1`
 	});
+	const lines = drawRectangular(width, height, '#666');
+	lifeBar.appendChild(lines);
 	lifeBar.appendChild(lifeBarGrey);
 	lifeBar.appendChild(lifeBarLife);
 	lifeBarGrey.classList.add('life-bar-grey');
@@ -65,8 +68,8 @@ export const updateLifeBar = (unit: Unit) => {
 				dur:${duration};`
 	);
 	let newColor = 'lightgreen';
-	if (unit.hasStatus('down')) newColor = 'orange';
-	if (unit.hasStatus('unconscious')) newColor = 'red';
+	if (unit.actor.statuses.has('down')) newColor = 'orange';
+	if (unit.actor.statuses.has('unconscious')) newColor = 'red';
 	setTimeout(() => {
 		console.log('updating color ', newColor);
 		unit.lifeBars.life?.setAttribute('color', newColor);

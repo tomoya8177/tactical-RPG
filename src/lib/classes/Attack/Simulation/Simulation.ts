@@ -64,18 +64,17 @@ export class Simulation {
 				hit,
 				notice,
 				dodge: possibility(this.foe.dodge * this.attackTime),
-				parry: this.foe.parry.map((parry) => {
+				parry: this.foe.actor.equipments.getParryWeapons().map((parry) => {
 					parry.level = parry.level * this.attackTime;
 					return parry;
 				}),
-				damage: giveDamageBonus(getDamage(this.attacker, this.foe, this.weapon), this.weapon)
+				damage: giveDamageBonus(
+					getDamage(this.attacker, this.foe, this.weapon),
+					this.weapon,
+					'torso'
+				)
 			};
-			console.log(
-				this.result,
-				this.attacker.getLv(this.weapon.skillToUse),
-				this.weapon.skillToUse,
-				this.attackTime
-			);
+
 			resolve(this.result);
 		});
 	};

@@ -93,16 +93,7 @@
 	color:lightblue;
 	groundColor:grey"
 	/>
-	<a-plane
-		class="unclickable"
-		shadow="receive:true;cast:false"
-		width="20"
-		height="20"
-		rotation="-90 0 0"
-		position="9.5 0 9.5"
-		opacity="0.5"
-		material="shader: flat; src: #water;repeat:10 10;"
-	/>
+
 	<a-entity tactics-navigation id="rig" position="0 0 0">
 		<a-entity class="offsetter" rotation="0 -45 0">
 			<a-camera

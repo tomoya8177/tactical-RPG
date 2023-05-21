@@ -5,6 +5,7 @@
 	import { FogExp2 } from 'three';
 	import WeaponTag from '../Atoms/WeaponTag.svelte';
 	import { possibility } from '$lib/presets/rollPossibility';
+	import Life from '../Atoms/Life.svelte';
 
 	const onOKClicked = () => {
 		ATTACK.execute();
@@ -39,7 +40,8 @@
 				target:{ATTACK.foe?.actor?.name}
 			</div>
 			<div>
-				Life: {showDecimal(ATTACK.foe.life, 1) * 10} / {(ATTACK.foe.maxLife || 0) * 10}
+				Life:
+				<Life unit={ATTACK.foe} />
 			</div>
 
 			<div>

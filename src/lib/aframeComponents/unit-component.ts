@@ -53,7 +53,7 @@ AFRAME.registerComponent('unit-component', {
 						if (!direction) {
 							break;
 						}
-						await this.unit.turnToDirection(yRotation, direction);
+						await this.unit.navigation.turnToDirection(yRotation, direction);
 						this.unit.changeState('idle');
 						uiController.show('actionMenu');
 					}

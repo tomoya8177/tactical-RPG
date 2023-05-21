@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { Equipment, bodyParts } from '$lib/classes/Equipment/Equipment';
+	import type { Equipment } from '$lib/classes/Equipment/Equipment';
 	import type { Unit } from '$lib/classes/Stage/Units/Unit/Unit';
+	import { bodyParts } from '$lib/presets/bodyParts';
 	import WeaponTag from '../Atoms/WeaponTag.svelte';
 	type TempEquipment = Equipment & { tempId: number };
 	type dummyEquipment = { name: string; equippedOn: string };
@@ -14,24 +15,26 @@
 
 <div class="body-parts">
 	{#each Object.entries(bodyParts) as [key, bodyPart]}
-		<div class="body-part">
-			<div>{bodyPart.title}</div>
-			<ul>
-				{#each equipments.filter((equipment) => equipment.equippedOn == key) as equipment}
-					<li>
-						<button
-							class:selected={selectedEquipment == equipment}
-							on:click={() => onEquipmentClicked(equipment)}
-						>
-							<WeaponTag weapon={equipment} level={unit.getLv(equipment.skillToUse)} />
-						</button>
-					</li>
-				{/each}
-				{#if selectedEquipment && selectedEquipment.equippedOn != key}
-					<button on:click={() => onTakeSpotClicked(key)}>Take this spot</button>
-				{/if}
-			</ul>
-		</div>
+		{#if bodyPart.equipmentCapacity > 0}
+			<div class="body-part">
+				<div>{bodyPart.title}</div>
+				<ul>
+					{#each equipments.filter((equipment) => equipment.equippedOn == key) as equipment, i}
+						<li>
+							<button
+								class:selected={selectedEquipment == equipment}
+								on:click={() => onEquipmentClicked(equipment)}
+							>
+								<WeaponTag weapon={equipment} level={unit.getLv(equipment.skillToUse)} />
+							</button>
+						</li>
+					{/each}
+					{#if selectedEquipment && selectedEquipment.equippedOn != key && bodyPart.equipmentCapacity > equipments.filter((equipment) => equipment.equippedOn == key).length && bodyPart.acceptedEquipmetnTypes.includes(selectedEquipment.type)}
+						<button on:click={() => onTakeSpotClicked(key)}>Take this spot</button>
+					{/if}
+				</ul>
+			</div>
+		{/if}
 	{/each}
 </div>
 

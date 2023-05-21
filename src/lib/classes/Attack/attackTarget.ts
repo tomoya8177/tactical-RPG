@@ -8,6 +8,8 @@ import { systemConfig } from '$lib/systemConfig';
 import { noticePossibility } from './noticePossibility';
 import { getDamage, giveDamageBonus } from './getDamage';
 import { getUnitStatusObejct, unitStatus } from '$lib/presets/unitStatus';
+import { checkWhichBodyPartIsHit } from './checkWhichBodyPartIsHit';
+import type { unitStatusType } from '$lib/types/unitStatus';
 
 export const attackTarget = (
 	attacker: Unit,
@@ -29,20 +31,21 @@ export const attackTarget = (
 		return roll3d6(dodge * attackTime).result;
 	};
 	const checkIfFoeCanParry = () => {
-		const parries = foe.parry;
+		const parries = foe.actor.equipments.getParryWeapons();
+		console.log({ parries });
 		if (parries.length === 0) return false;
 		return roll3d6(parries[0].level * attackTime).result;
 	};
 
-	const givenState: typeof unitStatus = [];
+	const givenState: unitStatusType[] = [];
 	if (!checkIfAttackHits()) {
 		foe.promptResult('Miss');
 
 		return {
 			result: 'miss',
 			damage: 0,
-			givenState: [],
-			foeIsDead: false
+			foeIsDead: false,
+			givenState: []
 		};
 	}
 	if (!foe.isUnconscious() && checkIfFoeNoticesAttack()) {
@@ -54,6 +57,7 @@ export const attackTarget = (
 				result: 'dodge',
 				damage: 0,
 				givenState: [],
+
 				foeIsDead: false
 			};
 		}
@@ -63,18 +67,21 @@ export const attackTarget = (
 			return {
 				result: 'parry',
 				damage: 0,
-
 				givenState: [],
+
 				foeIsDead: false
 			};
 		}
 	}
+	const bodyPart = checkWhichBodyPartIsHit(attacker, foe);
+	console.log({ bodyPart });
+
 	let damage = getDamage(attacker, foe, equipment);
 	if (damage > foe.actor.HT / 2) {
 		const status = getUnitStatusObejct('down');
 		givenState.push(status);
 	}
-	damage = giveDamageBonus(damage, equipment);
+	damage = giveDamageBonus(damage, equipment, bodyPart);
 
 	// if weapon's damage type was bladed and the damage was more than 1/2 of foe's HT, foe will be given the "bleeding" status
 	if (equipment.harmType === 'bladed' && damage > foe.actor.HT / 2) {
@@ -90,18 +97,19 @@ export const attackTarget = (
 			result: 'error',
 			damage: 0,
 			givenState: [],
+			bodyPart,
 			foeIsDead: false
 		};
 	}
 	if (foe.life <= 0) {
-		const status = getUnitStatusObejct('dead');
-		foe.addStatus(status);
+		foe.actor.statuses.add('dead');
 	}
 
 	return {
 		result: 'hit',
 		damage: damage,
 		givenState,
+		bodyPart,
 		foeIsDead: foe.life <= 0
 	};
 };

@@ -6,4 +6,4 @@
 </script>
 
 {weapon.name}
-(Lv: {level})
+(Lv: {level.toFixed(0)})

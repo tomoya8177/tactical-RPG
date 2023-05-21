@@ -25,11 +25,9 @@ export const noticePossibility = (attacker: Unit, foe: Unit) => {
 	let angle = radians2degrees(v1.angleTo(v2));
 	if (angle < 45) {
 		return 1;
-	} else if (angle < 135) {
-		const num = 1 - (angle - 45) / 90;
+	} else {
+		const num = 1 - (angle - 45) / 135;
 		console.log({ num });
 		return num;
-	} else {
-		return 0.1;
 	}
 };

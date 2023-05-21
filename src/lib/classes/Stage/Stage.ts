@@ -89,9 +89,7 @@ class Stage {
 		await CAMERA.move(unit.position);
 		uiController.show('actorData');
 		//uiController.update({ actionMenu: true });
-		console.log(' fidingPath ');
 		this.findPath(unit);
-		console.log(' found Path ');
 	}
 
 	findPath(unit: Unit): Array<path> {
@@ -130,7 +128,7 @@ class Stage {
 		if (!UNIT) return;
 		uiController.hide('actorData');
 		uiController.hide('actionMenu');
-		await UNIT.moveToTile(path);
+		await UNIT.navigation.moveToTile(path);
 		CAMERA.move(UNIT?.position || null);
 	}
 }

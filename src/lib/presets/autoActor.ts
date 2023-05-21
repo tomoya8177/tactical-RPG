@@ -1,14 +1,16 @@
+import { dice3d6, roll3d6 } from '$lib/Maths/dice3d6';
 import type { Actor } from '$lib/classes/Actor/Actor';
+import { Skill } from '$lib/classes/Actor/Skill/Skill';
 import { Equipment } from '$lib/classes/Equipment/Equipment';
 import { randomNames } from './randomNames';
 
 export const autoActor = (): Actor => {
 	return {
 		name: randomNames[Math.round(randomNames.length * Math.random())],
-		ST: Math.round(10 * Math.random()) + 5,
-		DX: Math.round(10 * Math.random()) + 5,
-		IQ: Math.round(10 * Math.random()) + 5,
-		HT: Math.round(10 * Math.random()) + 5,
+		ST: dice3d6(),
+		DX: dice3d6(),
+		IQ: dice3d6(),
+		HT: dice3d6(),
 		damage: 0,
 		statuses: [],
 		equipments: [
@@ -27,7 +29,8 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 1,
 				rangeType: 'direct',
-				equippedOn: 'waist'
+				equippedOn: 'waist',
+				canParry: true
 			}),
 			new Equipment({
 				name: 'Spear',
@@ -44,7 +47,8 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 2,
 				rangeType: 'direct',
-				equippedOn: 'back'
+				equippedOn: 'back',
+				canParry: true
 			}),
 			new Equipment({
 				name: 'Crossbow',
@@ -61,7 +65,8 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 8,
 				rangeType: 'ranged',
-				equippedOn: 'leftHand'
+				equippedOn: 'leftHand',
+				canParry: false
 			}),
 			new Equipment({
 				name: 'GreatBow',
@@ -78,22 +83,26 @@ export const autoActor = (): Actor => {
 				life: 10,
 				range: 10,
 				rangeType: 'ranged',
-				equippedOn: 'rightHand'
+				equippedOn: 'rightHand',
+				canParry: false
 			})
 		],
 		skills: [
-			{
+			new Skill({
 				name: 'Sword',
-				level: Math.round(10 * Math.random()) + 5
-			},
-			{
+				level: dice3d6(),
+				type: 'physical'
+			}),
+			new Skill({
 				name: 'Spear',
-				level: Math.round(10 * Math.random()) + 5
-			},
-			{
+				level: dice3d6(),
+				type: 'physical'
+			}),
+			new Skill({
 				name: 'Crossbow',
-				level: 15
-			}
+				level: 15,
+				type: 'physical'
+			})
 		]
 	};
 };

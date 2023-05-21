@@ -15,15 +15,24 @@ export const buildEntity = (tile: Tile): Entity => {
 		rotation: '-90 0 0',
 		color: `${tile.material.color}`
 	});
+	if (tile.material.slug == 'waterSurface') {
+		entity.classList.add('unclickable');
+		plane.classList.add('unclickable');
+		plane.setAttribute('shadow', 'receive:true;cast:false');
+		plane.setAttribute('opacity', '0.5');
+		plane.setAttribute('material', 'shader: flat; src: #water;');
+	}
 	entity.appendChild(plane);
-	const box = createAframeEntity('a-box', {
-		shadow: 'cast: true; receive: true;',
-		width: 1,
-		height: tile.y + 5,
-		depth: 1,
-		position: `0 ${(tile.y / 2 + 2.5) * -1 - 0.01} 0`
-	});
-	box.classList.add('ground');
-	entity.appendChild(box);
+	if (tile.material.slug != 'waterSurface') {
+		const box = createAframeEntity('a-box', {
+			shadow: 'cast: true; receive: true;',
+			width: 1,
+			height: tile.y + 5,
+			depth: 1,
+			position: `0 ${(tile.y / 2 + 2.5) * -1 - 0.01} 0`
+		});
+		box.classList.add('ground');
+		entity.appendChild(box);
+	}
 	return entity;
 };

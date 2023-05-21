@@ -7,6 +7,7 @@ import type { Entity } from 'aframe';
 import { createAframeEntity } from '$lib/createAframeEntity';
 import { buildEntity } from './buildEntity';
 import { STAGE } from '../../Stage';
+import type { tileMaterial } from '$lib/presets/tileMaterial';
 type state = 'idle' | 'focus' | 'destination' | 'destinationInDanger' | 'target';
 
 export class Tile {

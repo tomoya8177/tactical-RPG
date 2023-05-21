@@ -1,5 +1,5 @@
 export const dice3d6 = () => {
-	return 6 * Math.random() + 6 * Math.random() + 6 * Math.random();
+	return 5 * Math.random() + 5 * Math.random() + 5 * Math.random() + 3;
 };
 export const roll3d6 = (value: number) => {
 	const roll = dice3d6();

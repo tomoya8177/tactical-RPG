@@ -1,3 +1,4 @@
+import { createAframeEntity } from '$lib/createAframeEntity';
 import { tileMaterials } from '$lib/presets/tileMaterial';
 import { Tile } from './Tiles/Tile/Tile';
 export const testStage = (x: number, z: number, y: number | null = null): Tile[] => {
@@ -46,6 +47,19 @@ export const testStage = (x: number, z: number, y: number | null = null): Tile[]
 			count++;
 		}
 	}
+	stageTiles.forEach((tile) => {
+		if (tile.y < 0) {
+			const waterSurface = new Tile({
+				id: count,
+				position: { x: tile.x, z: tile.z, y: 0 },
+				isGround: false,
+				type: 'unwalkable',
+				material: tileMaterials.find((material) => material.slug == 'waterSurface')
+			});
+			stageTiles.push(waterSurface);
+		}
+		count++;
+	});
 
 	return stageTiles;
 };

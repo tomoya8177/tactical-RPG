@@ -32,6 +32,7 @@
 	};
 	let handleKeyDownListener = null;
 	const onEquipmentClicked = (equipment: TempEquipment | dummyEquipment) => {
+		console.log('equipment clicked', equipment, 'selectedEquipment', selectedEquipment);
 		if (!selectedEquipment) {
 			selectedEquipment = equipment;
 			STAGE.changeState('equipmentSelected');
@@ -45,7 +46,7 @@
 		const eq2 = selectedEquipment.equippedOn;
 		equipment.equippedOn = eq2;
 		selectedEquipment.equippedOn = eq1;
-		//equipments = equipments;
+		equipments = equipments;
 		selectedEquipment = null;
 	};
 	const onTakeSpotClicked = (equippedOn: string) => {
@@ -61,20 +62,21 @@
 			if (!unit || !unit?.actor) throw new Error('unit.actor is null');
 			unit.actor.equipments[i].equippedOn = equipment.equippedOn;
 		});
-		unit.actor.equipments = unit.actor.equipments.filter(
-			(equipment) => equipment.equippedOn != null
-		);
+		unit.actor.equipments.removeUnequipped();
 		//unit.actor.equipments = [...equipments];
 		unit.consumeTaskPoint(0.5);
 		STAGE.changeState('idle');
 		//		cancelButtonController();
 	};
 	const onAbortClicked = () => {
+		STAGE.changeState('equipment');
 		cancelButtonController();
 	};
 	const onThrowAwayClicked = () => {
 		if (!selectedEquipment) return;
 		selectedEquipment.equippedOn = null;
+		selectedEquipment = null;
+		equipments = equipments;
 	};
 </script>
 
